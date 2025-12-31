@@ -105,7 +105,12 @@ const Register = () => {
                 let errorMessage = 'Kayıt başarısız.';
 
                 if (typeof data === 'string') {
-                    errorMessage = data;
+                    // Check if HTML error page
+                    if (data.trim().startsWith('<')) {
+                        errorMessage = "Sunucu Hatası. (Türkçe karakter veya bağlantı sorunu olabilir)";
+                    } else {
+                        errorMessage = data;
+                    }
                 } else if (data.email) {
                     errorMessage = Array.isArray(data.email) ? data.email[0] : data.email;
                 } else if (data.username) {
@@ -200,11 +205,11 @@ const Register = () => {
                         { id: 'KL', label: 'KL' },
                         { id: 'STP', label: 'STP' },
                         { id: 'SLB', label: 'SLB' },
-                        { id: 'SĞB', label: 'SĞB' },
+                        { id: 'SGB', label: 'SĞB' },
                         { id: 'MO', label: 'MO' },
                         { id: 'MOO', label: 'MOO' },
                         { id: 'SLK', label: 'SLK' },
-                        { id: 'SĞK', label: 'SĞK' },
+                        { id: 'SGK', label: 'SĞK' },
                         { id: 'ST', label: 'ST' }
                     ].map(pos => (
                         <button
