@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Upload, User, Mail, Lock, Check } from 'lucide-react';
-import { register } from '../services/api';
+import { register, login } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import '../styles/auth.css';
 
 const Register = () => {
@@ -51,8 +52,8 @@ const Register = () => {
         }
 
         if (step === 2) {
-            if (!formData.name) {
-                setError('Lütfen isminizi giriniz.');
+            if (!formData.name || !formData.age) {
+                setError('Lütfen tüm alanları doldurun.');
                 return;
             }
         }
@@ -65,6 +66,10 @@ const Register = () => {
         setError('');
         if (step > 1) setStep(step - 1);
     };
+
+    const { success } = useToast();
+
+    // ... existing code ...
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -81,10 +86,15 @@ const Register = () => {
             // Register request
             await register(data);
 
-            // Redirect to home or login
-            // For now, redirect to matches as "logged in" state handling needs Login
-            // But since register returns tokens, we might want to auto-login?
-            // The User requested just Register page for now. 
+            // Auto Login
+            await login({
+                email: formData.email,
+                password: formData.password
+            });
+
+            success('Kayıt başarılı! Otomatik giriş yapıldı.');
+
+            // Redirect to home or matches
             navigate('/matches');
         } catch (err) {
             console.error(err);
@@ -244,12 +254,20 @@ const Register = () => {
                     <div></div> // Spacer
                 )}
 
-                {step < 3 ? (
+                {step === 1 && (
                     <button className="btn-primary" onClick={nextStep} disabled={!formData.email || !formData.password}>
                         İleri <ChevronRight size={16} />
                     </button>
-                ) : (
-                    <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
+                )}
+
+                {step === 2 && (
+                    <button className="btn-primary" onClick={nextStep} disabled={!formData.name || !formData.age}>
+                        İleri <ChevronRight size={16} />
+                    </button>
+                )}
+
+                {step === 3 && (
+                    <button className="btn-primary" onClick={handleSubmit} disabled={loading || !formData.photo || !formData.position}>
                         {loading ? 'Kaydediliyor...' : 'Tamamla'} <Check size={16} />
                     </button>
                 )}
