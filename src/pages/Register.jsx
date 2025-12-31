@@ -87,12 +87,13 @@ const Register = () => {
             await register(data);
 
             // Auto Login
+            // Auto Login - Backend expects 'username' field even if it's an email
             await login({
-                email: formData.email,
+                username: formData.email,
                 password: formData.password
             });
 
-            success('Kayıt başarılı! Otomatik giriş yapıldı.');
+            success('Kayıt başarılı! Giriş yapıldı.');
 
             // Redirect to home or matches
             navigate('/matches');
