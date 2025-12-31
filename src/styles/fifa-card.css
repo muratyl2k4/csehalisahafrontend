@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0e27;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    padding: 20px;
+}
+
+.card-container {
+    perspective: 1000px;
+}
+
+/* ========== KART ANA YAPI ========== */
+.ucl-card {
+    width: 360px;
+    height: 510px;
+    position: relative;
+    background-image: url('/background.png');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ========== OYUNCU FOTOĞRAFI ========== */
+.player-container {
+    position: absolute;
+    top: 60px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    overflow: hidden;
+    /* Alt kısımda gradient mask - statların görünür olması için */
+    -webkit-mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 1) 60%,
+            rgba(0, 0, 0, 0.7) 80%,
+            rgba(0, 0, 0, 0.3) 95%,
+            rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 1) 60%,
+            rgba(0, 0, 0, 0.7) 80%,
+            rgba(0, 0, 0, 0.3) 95%,
+            rgba(0, 0, 0, 0) 100%);
+}
+
+.player-photo {
+    height: auto;
+    width: 250px;
+    height: 250px;
+    max-width: none;
+    object-fit: contain;
+    object-position: center bottom;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+    transform: translateY(-190px);
+}
+
+/* ========== SOL ÜST: RATING VE POZİSYON ========== */
+.top-info {
+    position: absolute;
+    top: 75px;
+    left: 40px;
+    z-index: 5;
+    text-align: center;
+}
+
+.rating {
+    font-size: 52px;
+    font-weight: 600;
+    line-height: 0.9;
+    color: #000;
+    letter-spacing: -1px;
+}
+
+.position {
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    color: #000;
+}
+
+/* ========== ALT BİLGİLER ========== */
+.bottom-info {
+    position: absolute;
+    height: 20px;
+    bottom: 150px;
+    width: 100%;
+    z-index: 10;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+/* Oyuncu İsmi */
+.name-section {
+    text-align: center;
+    margin-bottom: 5px;
+    margin-top: 0px;
+}
+
+.name-section h1 {
+    margin-top: 0PX;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: none;
+    color: #000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* İstatistikler */
+.stats-grid {
+    margin-top: -25px;
+    display: flex;
+    justify-content: space-between;
+    gap: 0px;
+    padding: 3px 0;
+    margin-bottom: 3px;
+}
+
+.s-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.lbl {
+    font-size: 25px;
+    color: #000;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+}
+
+.val {
+    margin-top: -5px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #000;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+}
+
+/* Logolar */
+.logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 0;
+}
+
+.logo-img {
+    height: 26px;
+    width: 26px;
+    object-fit: contain;
+    border-radius: 3px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .ucl-card {
+        width: 320px;
+        height: 450px;
+    }
+
+    .player-photo {
+        height: auto;
+        width: 220px;
+        height: 220px;
+        max-width: none;
+        object-fit: contain;
+        object-position: center bottom;
+        filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+        transform: translateY(-167px);
+    }
+
+    .rating {
+        font-size: 56px;
+    }
+
+    .name-section h1 {
+        margin-top: 5px;
+        font-size: 28px;
+    }
+
+    .top-info {
+        position: absolute;
+        top: 50px;
+        left: 20px;
+        z-index: 5;
+        text-align: center;
+    }
+
+    .rating {
+        font-size: 52px;
+        font-weight: 600;
+        line-height: 0.9;
+        color: #000;
+        letter-spacing: -1px;
+    }
+
+    .position {
+        font-size: 25px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        margin-top: 2px;
+        color: #000;
+    }
+}

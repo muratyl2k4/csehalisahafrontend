@@ -1,0 +1,195 @@
+/* ========== PLAYER TABLE - DARK PREMIUM ========== */
+
+.player-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    margin-top: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.player-table thead {
+    background: var(--bg-hover);
+}
+
+.player-table th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-light);
+}
+
+.player-table th:first-child {
+    padding-left: 1.5rem;
+}
+
+.player-table th:last-child {
+    padding-right: 1.5rem;
+}
+
+.player-table tbody tr {
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.player-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.player-table tbody tr:hover {
+    background: rgba(129, 140, 248, 0.1);
+}
+
+.player-table tbody tr:hover td:first-child {
+    border-left: 3px solid var(--primary);
+    padding-left: calc(1.5rem - 3px);
+}
+
+.player-table td {
+    padding: 1rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.player-table td:first-child {
+    padding-left: 1.5rem;
+    border-left: 3px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.player-table td:last-child {
+    padding-right: 1.5rem;
+}
+
+.player-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.player-team {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.player-stat {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .player-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .player-table th,
+    .player-table td {
+        padding: 0.875rem 0.75rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    .player-table th:first-child,
+    .player-table td:first-child {
+        padding-left: 1rem;
+    }
+
+    .player-table th:last-child,
+    .player-table td:last-child {
+        padding-right: 1rem;
+    }
+
+    .player-name {
+        font-size: 0.9rem;
+    }
+}
+
+/* Alternative: Mobile Card View */
+@media (max-width: 480px) {
+    .player-table thead {
+        display: none;
+    }
+
+    .player-table,
+    .player-table tbody,
+    .player-table tr,
+    .player-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .player-table {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .player-table tbody tr {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .player-table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .player-table tbody tr:hover td:first-child {
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .player-table td {
+        padding: 0.25rem 0;
+        border-left: none !important;
+    }
+
+    .player-table td:first-child {
+        grid-column: 1 / -1;
+        padding-left: 0;
+    }
+
+    .player-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .player-name {
+        font-size: 1.1rem;
+    }
+
+    .player-team {
+        font-size: 0.85rem;
+    }
+
+    .player-stat {
+        font-size: 1.25rem;
+    }
+}
