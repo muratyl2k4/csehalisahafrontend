@@ -30,30 +30,61 @@ function FifaCard({ player, small = false }) {
 
                 {/* İstatistikler */}
                 <div className="stats-grid">
-                    <div className="s-box">
-                        <span className="lbl">PAC</span>
-                        <span className="val">{player.pace}</span>
-                    </div>
-                    <div className="s-box">
-                        <span className="lbl">SHO</span>
-                        <span className="val">{player.shooting}</span>
-                    </div>
-                    <div className="s-box">
-                        <span className="lbl">PAS</span>
-                        <span className="val">{player.passing}</span>
-                    </div>
-                    <div className="s-box">
-                        <span className="lbl">DRI</span>
-                        <span className="val">{player.dribbling}</span>
-                    </div>
-                    <div className="s-box">
-                        <span className="lbl">DEF</span>
-                        <span className="val">{player.defense}</span>
-                    </div>
-                    <div className="s-box">
-                        <span className="lbl">PHY</span>
-                        <span className="val">{player.physical}</span>
-                    </div>
+                    {player.position === 'KL' ? (
+                        <>
+                            <div className="s-box">
+                                <span className="lbl">DIV</span>
+                                <span className="val">{player.diving}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">HAN</span>
+                                <span className="val">{player.handling}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">KIC</span>
+                                <span className="val">{player.kicking}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">REF</span>
+                                <span className="val">{player.reflexes}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">SPD</span>
+                                <span className="val">{player.speed}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">POS</span>
+                                <span className="val">{player.positioning}</span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="s-box">
+                                <span className="lbl">PAC</span>
+                                <span className="val">{player.pace}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">SHO</span>
+                                <span className="val">{player.shooting}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">PAS</span>
+                                <span className="val">{player.passing}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">DRI</span>
+                                <span className="val">{player.dribbling}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">DEF</span>
+                                <span className="val">{player.defense}</span>
+                            </div>
+                            <div className="s-box">
+                                <span className="lbl">PHY</span>
+                                <span className="val">{player.physical}</span>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Logolar */}

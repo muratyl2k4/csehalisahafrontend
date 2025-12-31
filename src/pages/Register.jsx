@@ -100,7 +100,27 @@ const Register = () => {
         } catch (err) {
             console.error(err);
             if (err.response && err.response.data) {
-                setError(JSON.stringify(err.response.data));
+                // Parse Error Message
+                const data = err.response.data;
+                let errorMessage = 'Kayıt başarısız.';
+
+                if (typeof data === 'string') {
+                    errorMessage = data;
+                } else if (data.email) {
+                    errorMessage = Array.isArray(data.email) ? data.email[0] : data.email;
+                } else if (data.username) {
+                    errorMessage = "Bu e-posta adresi kullanımda olabilir.";
+                } else if (data.detail) {
+                    errorMessage = data.detail;
+                } else {
+                    // Fallback: take first error value found
+                    const firstKey = Object.keys(data)[0];
+                    if (firstKey && data[firstKey]) {
+                        const val = data[firstKey];
+                        errorMessage = Array.isArray(val) ? val[0] : val;
+                    }
+                }
+                setError(errorMessage);
             } else {
                 setError('Kayıt başarısız. Lütfen bilgileri kontrol edin.');
             }
