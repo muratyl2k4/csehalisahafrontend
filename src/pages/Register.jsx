@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Upload, User, Mail, Lock, Check } from 'lucide-react';
 import { register, login } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import Modal from '../components/ui/Modal';
 import '../styles/auth.css';
 
 const Register = () => {
@@ -10,6 +11,8 @@ const Register = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const [showPhotoWarning, setShowPhotoWarning] = useState(false);
 
     // Form Data - Username removed
     const [formData, setFormData] = useState({
@@ -59,7 +62,15 @@ const Register = () => {
         }
 
         setError(''); // Clear errors
-        if (step < 3) setStep(step + 1);
+        if (step < 3) {
+            const nextStepNum = step + 1;
+            setStep(nextStepNum);
+
+            // If moving to step 3 (Photo upload), show warning
+            if (nextStepNum === 3) {
+                setShowPhotoWarning(true);
+            }
+        }
     };
 
     const prevStep = () => {
@@ -298,6 +309,42 @@ const Register = () => {
                     </button>
                 )}
             </div>
+            <Modal
+                isOpen={showPhotoWarning}
+                onClose={() => setShowPhotoWarning(false)}
+                title="⚠️ Önemli Uyarı"
+            >
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <p style={{ marginBottom: '1rem', fontSize: '1.1rem', color: '#ff4444', fontWeight: 'bold' }}>
+                        Lütfen Dikkat!
+                    </p>
+                    <p style={{ marginBottom: '1rem', lineHeight: '1.5', color: '#333' }}>
+                        Yükleyeceğiniz fotoğrafın arka planı <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>mutlaka temizlenmiş olmalıdır.</span>
+                    </p>
+                    <p style={{ marginBottom: '1.5rem', lineHeight: '1.5', color: '#555' }}>
+                        Aksi takdirde <b>hesabınız silinecektir.</b><br />
+                        Profesyonel bir görünüm için lütfen aşağıdaki siteyi kullanın:
+                    </p>
+
+                    <a
+                        href="https://www.remove.bg/upload"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary"
+                        style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '1.5rem' }}
+                    >
+                        remove.bg Sitesine Git ↗
+                    </a>
+
+                    <button
+                        className="btn-secondary"
+                        onClick={() => setShowPhotoWarning(false)}
+                        style={{ width: '100%' }}
+                    >
+                        Anladım, Yüklemeye Devam Et
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 };
