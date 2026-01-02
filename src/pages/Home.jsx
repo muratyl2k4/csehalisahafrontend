@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Users, Swords, BarChart3, Calendar, TrendingUp } from 'lucide-react';
-import { getRecentMatches, getTopTeams, getTopPlayers } from '../services/api';
+import { getRecentMatches, getTopTeams, getTopPlayers, getTeams, getPlayers } from '../services/api';
 import creatorLogo from '../assets/Murat Yıldırm (1).png';
 import '../styles/home.css';
 
@@ -10,18 +10,33 @@ function Home() {
     const [topTeams, setTopTeams] = useState([]);
     const [loading, setLoading] = useState(true);
 
+
+
+    const [totalStats, setTotalStats] = useState({ teams: 0, players: 0 });
+
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
         try {
-            const [playersData, teamsData] = await Promise.all([
+            // Load Top Lists AND Total Counts
+            // getTeams() returns all teams (array)
+            // getPlayers({page: 1}) returns { count: ... }
+            const [playersData, teamsData, allTeams, playersPage] = await Promise.all([
                 getTopPlayers(),
-                getTopTeams()
+                getTopTeams(),
+                getTeams(),
+                getPlayers({ page: 1 })
             ]);
+
             setTopPlayers(playersData);
             setTopTeams(teamsData);
+            setTotalStats({
+                teams: allTeams.length || 0,
+                players: playersPage.count || 0
+            });
+
             setLoading(false);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -37,8 +52,64 @@ function Home() {
                 <img src={creatorLogo} alt="Murat Yıldırım" style={{ height: '200px', width: 'auto', borderRadius: '10px' }} />
             </div>
 
+
+
             <h1>AKDENİZ CSE HALISAHA LİGİ</h1>
             <p className="subtitle">Akdeniz Üniversitesi Öğrencileri İçin Halı Saha Lig Simülasyonu</p>
+
+            {/* Total Stats Section - Squares (Relocated & Styled) */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1rem',
+                marginBottom: '3rem',
+                maxWidth: '300px', /* Smaller container */
+                margin: '2rem auto 3rem auto'
+            }}>
+                <div style={{
+                    background: 'var(--bg-card)',
+                    border: '2px solid rgba(251, 191, 36, 0.3)', /* Gold border */
+                    boxShadow: '0 0 15px rgba(251, 191, 36, 0.1)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '1rem',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    aspectRatio: '1'
+                }}>
+                    <Trophy size={28} style={{ color: '#fbbf24', marginBottom: '0.5rem' }} />
+                    <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: '#fbbf24' }}>
+                        {loading ? '-' : totalStats.teams}
+                    </span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
+                        TAKIM
+                    </span>
+                </div>
+
+                <div style={{
+                    background: 'var(--bg-card)',
+                    border: '2px solid rgba(129, 140, 248, 0.3)', /* Indigo border */
+                    boxShadow: '0 0 15px rgba(129, 140, 248, 0.1)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '1rem',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    aspectRatio: '1'
+                }}>
+                    <Users size={28} style={{ color: '#818cf8', marginBottom: '0.5rem' }} />
+                    <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: '#818cf8' }}>
+                        {loading ? '-' : totalStats.players}
+                    </span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
+                        OYUNCU
+                    </span>
+                </div>
+            </div>
 
             {/* Widget Section */}
             <div className="widgets-section">
@@ -59,7 +130,7 @@ function Home() {
                         </div>
                     ) : (
                         <div className="teams-list">
-                            {topTeams.map((team, index) => (
+                            {topTeams.slice(0, 3).map((team, index) => (
                                 <Link to={`/teams/${team.id}`} key={team.id} className={`team-item rank-${index + 1}`} style={{ alignItems: 'center', padding: '1rem' }}>
                                     <div className={`team-rank rank-badge-${index + 1}`}>{index + 1}</div>
                                     {team.logo && <img src={team.logo} alt={team.name} className="list-logo" style={{ width: '40px', height: '40px', objectFit: 'contain', marginRight: '1rem' }} />}
@@ -68,7 +139,7 @@ function Home() {
                                     </div>
                                 </Link>
                             ))}
-                            <Link to="/teams" className="view-all-btn">
+                            <Link to="/search?tab=teams" className="view-all-btn">
                                 Tüm Takımlar
                             </Link>
                         </div>
@@ -91,7 +162,7 @@ function Home() {
                         </div>
                     ) : (
                         <div className="teams-list">
-                            {topPlayers.map((player, index) => (
+                            {topPlayers.slice(0, 3).map((player, index) => (
                                 <Link to={`/players/${player.id}`} key={player.id} className={`team-item rank-${index + 1}`}>
                                     <div className={`team-rank rank-badge-${index + 1}`} style={{ fontSize: '1.2rem', fontWeight: 900 }}>{player.overall}</div>
                                     {player.photo ? (
@@ -111,7 +182,7 @@ function Home() {
 
                                 </Link>
                             ))}
-                            <Link to="/players" className="view-all-btn">
+                            <Link to="/search?tab=players" className="view-all-btn">
                                 Tüm Oyuncular
                             </Link>
                         </div>
@@ -122,7 +193,7 @@ function Home() {
             {/* Dashboard Grid */}
             <h2 className="section-title">Hızlı Erişim</h2>
             <div className="dashboard-grid">
-                <Link to="/teams" className="dashboard-card">
+                <Link to="/search?tab=teams" className="dashboard-card">
                     <div className="card-icon">
                         <Trophy size={48} />
                     </div>
@@ -130,7 +201,7 @@ function Home() {
                     <p>Takım istatistiklerini görüntüle</p>
                 </Link>
 
-                <Link to="/players" className="dashboard-card">
+                <Link to="/search?tab=players" className="dashboard-card">
                     <div className="card-icon">
                         <Users size={48} />
                     </div>

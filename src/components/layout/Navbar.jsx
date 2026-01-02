@@ -1,17 +1,31 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut } from 'lucide-react';
-import { isAuthenticated, logout } from '../../services/api';
+import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut, Search, Bell } from 'lucide-react';
+import { isAuthenticated, logout, getUnreadNotificationCount } from '../../services/api';
 import './Navbar.css';
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [loggedIn, setLoggedIn] = useState(isAuthenticated());
+    const [unreadCount, setUnreadCount] = useState(0);
     const location = useLocation();
 
     useEffect(() => {
         setLoggedIn(isAuthenticated());
-    }, [location]); // Re-check on route change (e.g. after login redirect)
+
+        if (isAuthenticated()) {
+            fetchUnreadCount();
+        }
+    }, [location]);
+
+    const fetchUnreadCount = async () => {
+        try {
+            const count = await getUnreadNotificationCount();
+            setUnreadCount(count);
+        } catch (error) {
+            console.error("Failed to fetch notifications count", error);
+        }
+    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -19,12 +33,6 @@ function Navbar() {
 
     const closeMenu = () => {
         setIsMenuOpen(false);
-    };
-
-    const handleLogout = () => {
-        logout();
-        setLoggedIn(false);
-        closeMenu();
     };
 
     const isActive = (path) => {
@@ -39,13 +47,46 @@ function Navbar() {
                     <span className="logo-text">CSE-LİG</span>
                 </Link>
 
-                <button
-                    className={`hamburger ${isMenuOpen ? 'active' : ''}`}
-                    onClick={toggleMenu}
-                    aria-label="Toggle menu"
-                >
-                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    {/* Always Visible Notification Bell (Mobile & Desktop) */}
+                    {loggedIn && (
+                        <Link
+                            to="/notifications"
+                            style={{ position: 'relative', display: 'flex', alignItems: 'center', color: 'white', textDecoration: 'none' }}
+                        >
+                            <Bell size={24} />
+                            {unreadCount > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '-6px',
+                                    right: '-6px',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 'bold',
+                                    minWidth: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '2px solid var(--primary-dark)', // Border to separate from background
+                                    padding: '2px'
+                                }}>
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
+
+                    <button
+                        className={`hamburger ${isMenuOpen ? 'active' : ''}`}
+                        onClick={toggleMenu}
+                        aria-label="Toggle menu"
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
 
                 <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
                     <li className="nav-item">
@@ -60,22 +101,12 @@ function Navbar() {
                     </li>
                     <li className="nav-item">
                         <Link
-                            to="/teams"
-                            className={`nav-link ${isActive('/teams') ? 'active' : ''}`}
+                            to="/search"
+                            className={`nav-link ${isActive('/search') ? 'active' : ''}`}
                             onClick={closeMenu}
                         >
-                            <Trophy size={20} />
-                            <span>Takımlar</span>
-                        </Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link
-                            to="/players"
-                            className={`nav-link ${isActive('/players') ? 'active' : ''}`}
-                            onClick={closeMenu}
-                        >
-                            <Users size={20} />
-                            <span>Oyuncular</span>
+                            <Search size={20} />
+                            <span>Ara</span>
                         </Link>
                     </li>
                     <li className="nav-item">
@@ -101,14 +132,14 @@ function Navbar() {
 
                     {loggedIn ? (
                         <li className="nav-item">
-                            <button
-                                onClick={handleLogout}
-                                className="nav-link"
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
+                            <Link
+                                to="/profile"
+                                className={`nav-link ${isActive('/profile') ? 'active' : ''}`}
+                                onClick={closeMenu}
                             >
-                                <LogOut size={20} />
-                                <span>Çıkış Yap</span>
-                            </button>
+                                <User size={20} />
+                                <span>Profil</span>
+                            </Link>
                         </li>
                     ) : (
                         <li className="nav-item">
@@ -123,8 +154,8 @@ function Navbar() {
                         </li>
                     )}
                 </ul>
-            </div>
-        </nav>
+            </div >
+        </nav >
     );
 }
 

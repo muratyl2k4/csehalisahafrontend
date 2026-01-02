@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Shield, AlertCircle } from 'lucide-react';
 import { createTeam } from '../services/api';
+import ImageEditorModal from '../components/ui/ImageEditorModal';
+import BackgroundWarningModal from '../components/ui/BackgroundWarningModal';
 import '../styles/auth.css'; // Can reuse auth styles for form
 
 const CreateTeam = () => {
@@ -14,6 +16,11 @@ const CreateTeam = () => {
     const [logoPreview, setLogoPreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Image Editor State
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [tempImageSrc, setTempImageSrc] = useState(null);
+    const [showWarning, setShowWarning] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user_info');
@@ -37,9 +44,24 @@ const CreateTeam = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData({ ...formData, logo: file });
-            setLogoPreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onload = () => {
+                setTempImageSrc(reader.result);
+                setIsEditorOpen(true);
+            };
+            reader.readAsDataURL(file);
+            // Clear input
+            e.target.value = '';
         }
+    };
+
+    const handleEditorSave = (croppedBlob) => {
+        const file = new File([croppedBlob], "team_logo.png", { type: "image/png" });
+        setFormData({ ...formData, logo: file });
+
+        const previewUrl = URL.createObjectURL(croppedBlob);
+        setLogoPreview(previewUrl);
+        setIsEditorOpen(false);
     };
 
     const handleSubmit = async (e) => {
@@ -117,8 +139,17 @@ const CreateTeam = () => {
                     <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.75rem', lineHeight: '1.4' }}>
                         Daha profesyonel bir görünüm için lütfen logonuzu <a href="https://www.remove.bg/upload" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>remove.bg</a> sitesinden arka planını temizleyerek yükleyiniz, <b>aksi takdirde silinecektir.</b>
                     </p>
-                    <label className="photo-upload-label">
-                        <input type="file" hidden onChange={handleFileChange} accept="image/*" />
+                    <input
+                        type="file"
+                        hidden
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        id="team-logo-input"
+                    />
+                    <label className="photo-upload-label" onClick={(e) => {
+                        e.preventDefault();
+                        setShowWarning(true);
+                    }}>
                         {logoPreview ? (
                             <img src={logoPreview} alt="Logo Preview" className="preview-image" style={{ borderRadius: '8px' }} />
                         ) : (
@@ -134,6 +165,22 @@ const CreateTeam = () => {
                     {loading ? 'Oluşturuluyor...' : 'Takımı Oluştur'} <Shield size={18} style={{ marginLeft: '8px' }} />
                 </button>
             </form>
+
+            <ImageEditorModal
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                imageSrc={tempImageSrc}
+                onSave={handleEditorSave}
+            />
+
+            <BackgroundWarningModal
+                isOpen={showWarning}
+                onClose={() => setShowWarning(false)}
+                onConfirm={() => {
+                    setShowWarning(false);
+                    document.getElementById('team-logo-input').click();
+                }}
+            />
         </div>
     );
 };

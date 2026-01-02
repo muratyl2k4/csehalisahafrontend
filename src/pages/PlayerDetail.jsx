@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { getPlayer } from '../services/api';
 import FifaCard from '../components/cards/FifaCard';
 import { ArrowLeft, User, Activity, Trophy, Calendar } from 'lucide-react';
@@ -7,6 +7,7 @@ import '../styles/home.css';
 
 function PlayerDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [player, setPlayer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -39,9 +40,9 @@ function PlayerDetail() {
         <div className="container">
             <div className="error-container" style={{ textAlign: 'center', padding: '3rem' }}>
                 <p style={{ color: '#ef4444', fontSize: '1.2rem' }}>{error}</p>
-                <Link to="/players" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
-                    Oyunculara Dön
-                </Link>
+                <button onClick={() => navigate(-1)} className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+                    Geri Dön
+                </button>
             </div>
         </div>
     );
@@ -50,10 +51,16 @@ function PlayerDetail() {
 
     return (
         <div className="container">
-            <Link to="/players" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2rem', fontWeight: 500 }}>
+            <button
+                onClick={() => navigate(-1)}
+                style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2rem', fontWeight: 500,
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit'
+                }}
+            >
                 <ArrowLeft size={20} />
-                Tüm Oyunculara Dön
-            </Link>
+                Geri Dön
+            </button>
 
             {/* Header Section */}
             <div className="team-detail-header">

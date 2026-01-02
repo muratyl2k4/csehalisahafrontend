@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft, Upload, User, Mail, Lock, Check } from 'lucide-react';
-import { register, login } from '../services/api';
+import { register, login, verifyEmail } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/ui/Modal';
+import BackgroundWarningModal from '../components/ui/BackgroundWarningModal';
+import ImageEditorModal from '../components/ui/ImageEditorModal';
 import '../styles/auth.css';
 
 const Register = () => {
@@ -14,7 +16,7 @@ const Register = () => {
 
     const [showPhotoWarning, setShowPhotoWarning] = useState(false);
 
-    // Form Data - Username removed
+    // Form Data
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -24,8 +26,15 @@ const Register = () => {
         photo: null
     });
 
+    // Verification Code
+    const [verificationCode, setVerificationCode] = useState('');
+
     // Image Preview
     const [photoPreview, setPhotoPreview] = useState(null);
+
+    // Image Editor State
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [tempImageSrc, setTempImageSrc] = useState(null);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,19 +43,30 @@ const Register = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData({ ...formData, photo: file });
-            setPhotoPreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onload = () => {
+                setTempImageSrc(reader.result);
+                setIsEditorOpen(true);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
         }
     };
 
+    const handleEditorSave = (croppedBlob) => {
+        const file = new File([croppedBlob], "profile_photo.png", { type: "image/png" });
+        setFormData({ ...formData, photo: file });
+        const previewUrl = URL.createObjectURL(croppedBlob);
+        setPhotoPreview(previewUrl);
+        setIsEditorOpen(false);
+    };
+
     const nextStep = () => {
-        // Validation Logic
         if (step === 1) {
             if (!formData.email || !formData.password) {
                 setError('Lütfen tüm alanları doldurun.');
                 return;
             }
-            // Basic Email Regex
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(formData.email)) {
                 setError('Geçerli bir E-posta adresi giriniz.');
@@ -61,12 +81,10 @@ const Register = () => {
             }
         }
 
-        setError(''); // Clear errors
+        setError('');
         if (step < 3) {
             const nextStepNum = step + 1;
             setStep(nextStepNum);
-
-            // If moving to step 3 (Photo upload), show warning
             if (nextStepNum === 3) {
                 setShowPhotoWarning(true);
             }
@@ -79,8 +97,6 @@ const Register = () => {
     };
 
     const { success } = useToast();
-
-    // ... existing code ...
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -97,26 +113,17 @@ const Register = () => {
             // Register request
             await register(data);
 
-            // Auto Login
-            // Auto Login - Backend expects 'username' field even if it's an email
-            await login({
-                username: formData.email,
-                password: formData.password
-            });
+            // Success -> Move to Step 4 (Verification)
+            success('Kayıt başarılı! Lütfen doğrulama kodunu giriniz.');
+            setStep(4);
 
-            success('Kayıt başarılı! Giriş yapıldı.');
-
-            // Redirect to home or matches
-            navigate('/matches');
         } catch (err) {
             console.error(err);
             if (err.response && err.response.data) {
-                // Parse Error Message
                 const data = err.response.data;
                 let errorMessage = 'Kayıt başarısız.';
 
                 if (typeof data === 'string') {
-                    // Check if HTML error page
                     if (data.trim().startsWith('<')) {
                         errorMessage = "Sunucu Hatası. (Türkçe karakter veya bağlantı sorunu olabilir)";
                     } else {
@@ -129,7 +136,6 @@ const Register = () => {
                 } else if (data.detail) {
                     errorMessage = data.detail;
                 } else {
-                    // Fallback: take first error value found
                     const firstKey = Object.keys(data)[0];
                     if (firstKey && data[firstKey]) {
                         const val = data[firstKey];
@@ -140,6 +146,32 @@ const Register = () => {
             } else {
                 setError('Kayıt başarısız. Lütfen bilgileri kontrol edin.');
             }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerification = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            await verifyEmail({
+                email: formData.email,
+                code: verificationCode
+            });
+            success('E-posta başarıyla doğrulandı!');
+
+            // Auto-Login after verification
+            await login({
+                username: formData.email,
+                password: formData.password
+            });
+            success('Giriş yapıldı.');
+            navigate('/matches');
+        } catch (err) {
+            console.error(err);
+            setError('Doğrulama başarısız. Kodu kontrol ediniz.');
+        } finally {
             setLoading(false);
         }
     };
@@ -262,17 +294,42 @@ const Register = () => {
         </div>
     );
 
+    const renderStep4 = () => (
+        <div className="step-content">
+            <div className="form-group" style={{ textAlign: 'center' }}>
+                <label>Doğrulama Kodu</label>
+                <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                    {formData.email} adresine gönderilen 6 haneli kodu giriniz.
+                </p>
+                <input
+                    type="text"
+                    className="form-input"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="123456"
+                    maxLength={6}
+                    style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem' }}
+                />
+            </div>
+        </div>
+    );
+
     return (
         <div className="auth-container">
             <div className="auth-header">
-                <h2>Kayıt Ol</h2>
-                <p>Adım {step}/3: {step === 1 ? 'Giriş Bilgileri' : step === 2 ? 'Kişisel Bilgiler' : 'Oyuncu Profili'}</p>
+                <h2>{step === 4 ? 'E-posta Doğrulama' : 'Kayıt Ol'}</h2>
+                <p>
+                    {step === 4
+                        ? 'Son Adım: Hesabını Doğrula'
+                        : `Adım ${step}/3: ${step === 1 ? 'Giriş Bilgileri' : step === 2 ? 'Kişisel Bilgiler' : 'Oyuncu Profili'}`
+                    }
+                </p>
             </div>
 
             <div className="progress-container">
                 <div
                     className="progress-bar"
-                    style={{ width: `${(step / 3) * 100}%` }}
+                    style={{ width: `${Math.min((step / 3) * 100, 100)}%` }}
                 ></div>
             </div>
 
@@ -281,9 +338,10 @@ const Register = () => {
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
             {step === 3 && renderStep3()}
+            {step === 4 && renderStep4()}
 
             <div className="step-actions">
-                {step > 1 ? (
+                {step > 1 && step < 4 ? (
                     <button className="btn-secondary" onClick={prevStep}>
                         <ChevronLeft size={16} /> Geri
                     </button>
@@ -305,47 +363,29 @@ const Register = () => {
 
                 {step === 3 && (
                     <button className="btn-primary" onClick={handleSubmit} disabled={loading || !formData.photo || !formData.position}>
-                        {loading ? 'Kaydediliyor...' : 'Tamamla'} <Check size={16} />
+                        {loading ? 'Kaydediliyor...' : 'Kaydı Tamamla'} <Check size={16} />
+                    </button>
+                )}
+
+                {step === 4 && (
+                    <button className="btn-primary" onClick={handleVerification} disabled={loading || verificationCode.length < 6}>
+                        {loading ? 'Doğrulanıyor...' : 'Doğrula ve Giriş Yap'} <Check size={16} />
                     </button>
                 )}
             </div>
-            <Modal
+            <BackgroundWarningModal
                 isOpen={showPhotoWarning}
                 onClose={() => setShowPhotoWarning(false)}
-                title="⚠️ Önemli Uyarı"
-            >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <p style={{ marginBottom: '1rem', fontSize: '1.1rem', color: '#ff4444', fontWeight: 'bold' }}>
-                        Lütfen Dikkat!
-                    </p>
-                    <p style={{ marginBottom: '1rem', lineHeight: '1.5', color: '#333' }}>
-                        Yükleyeceğiniz fotoğrafın arka planı <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>mutlaka temizlenmiş olmalıdır.</span>
-                    </p>
-                    <p style={{ marginBottom: '1.5rem', lineHeight: '1.5', color: '#555' }}>
-                        Aksi takdirde <b>hesabınız silinecektir.</b><br />
-                        Profesyonel bir görünüm için lütfen aşağıdaki siteyi kullanın:
-                    </p>
+                onConfirm={() => setShowPhotoWarning(false)}
+            />
 
-                    <a
-                        href="https://www.remove.bg/upload"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary"
-                        style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '1.5rem' }}
-                    >
-                        remove.bg Sitesine Git ↗
-                    </a>
-
-                    <button
-                        className="btn-secondary"
-                        onClick={() => setShowPhotoWarning(false)}
-                        style={{ width: '100%' }}
-                    >
-                        Anladım, Yüklemeye Devam Et
-                    </button>
-                </div>
-            </Modal>
-        </div>
+            <ImageEditorModal
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                imageSrc={tempImageSrc}
+                onSave={handleEditorSave}
+            />
+        </div >
     );
 };
 

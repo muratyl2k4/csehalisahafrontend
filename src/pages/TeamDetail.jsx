@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, Trophy, ArrowLeft, TrendingUp, UserPlus, Check, X, Shield } from 'lucide-react';
-import { getTeam, joinTeam, respondToRequest } from '../services/api';
+import { Users, Calendar, Trophy, ArrowLeft, TrendingUp, UserPlus, Check, X, Shield, Camera, Edit2 } from 'lucide-react';
+import { getTeam, joinTeam, respondToRequest, leaveTeam, updateTeam } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/ui/Modal';
+import ImageEditorModal from '../components/ui/ImageEditorModal'; // Import Image Editor
 import '../styles/home.css';
 
 function TeamDetail() {
@@ -14,9 +15,60 @@ function TeamDetail() {
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState(null);
     const [joinLoading, setJoinLoading] = useState(false);
-    const [actionLoading, setActionLoading] = useState(null); // ID of request being processed
+    // const [actionLoading, setActionLoading] = useState(null); // Unused
 
     const [showJoinModal, setShowJoinModal] = useState(false);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+
+    // Image Upload State
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [showImageEditor, setShowImageEditor] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
+    // Short Name Edit State
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editShortName, setEditShortName] = useState('');
+
+    const startEditingName = () => {
+        setEditShortName(team.short_name || '');
+        setIsEditingName(true);
+    };
+
+    const cancelEditingName = () => {
+        setIsEditingName(false);
+        setEditShortName('');
+    };
+
+    const saveShortName = async () => {
+        if (!editShortName.trim()) {
+            error("Kısaltma boş olamaz.");
+            return;
+        }
+        if (editShortName.indexOf(' ') >= 0) {
+            error("Kısaltma boşluk içeremez.");
+            return;
+        }
+        if (editShortName.length > 5) {
+            error("Kısaltma en fazla 5 karakter olabilir.");
+            return;
+        }
+        if (editShortName.length < 2) {
+            error("Kısaltma en az 2 karakter olmalı.");
+            return;
+        }
+
+        try {
+            const upName = editShortName.toUpperCase();
+            await updateTeam(team.id, { short_name: upName });
+            success("Takım kısaltması güncellendi.");
+            setTeam(prev => ({ ...prev, short_name: upName }));
+            setIsEditingName(false);
+        } catch (err) {
+            console.error(err);
+            error("Güncelleme başarısız.");
+        }
+    };
+
 
     useEffect(() => {
         loadTeamData();
@@ -42,6 +94,8 @@ function TeamDetail() {
         }
     };
 
+    // ... (Existing functions confirmJoin, handleLeaveTeam, etc. keep them same)
+
     const confirmJoin = async () => {
         setJoinLoading(true);
         try {
@@ -57,6 +111,63 @@ function TeamDetail() {
         }
     };
 
+    const handleLeaveTeam = () => {
+        setShowLeaveModal(true);
+    };
+
+    const confirmLeaveTeam = async () => {
+        try {
+            await leaveTeam();
+            success("Takımdan başarıyla ayrıldınız.");
+            const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
+            currentUser.teamId = null;
+            localStorage.setItem('user_info', JSON.stringify(currentUser));
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            error(err.response?.data?.detail || "Takımdan ayrılırken bir hata oluştu.");
+            setShowLeaveModal(false);
+        }
+    };
+
+    // --- Image Upload Logic ---
+    const handleFileChange = (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                setSelectedImage(reader.result);
+                setShowImageEditor(true);
+            });
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSaveCroppedImage = async (croppedImageBlob) => {
+        setUploadingImage(true);
+        setShowImageEditor(false);
+
+        try {
+            const formData = new FormData();
+            // Convert blob to file
+            const file = new File([croppedImageBlob], "team_logo.png", { type: "image/png" });
+            formData.append('logo', file);
+
+            await updateTeam(team.id, formData);
+
+            success('Takım logosu başarıyla güncellendi!');
+            loadTeamData(); // Refresh to see new logo
+
+        } catch (err) {
+            console.error("Logo update error", err);
+            error('Logo güncellenirken bir hata oluştu.');
+        } finally {
+            setUploadingImage(false);
+            setSelectedImage(null);
+        }
+    };
+
+
     if (loading) return <div className="container loading-text">Yükleniyor...</div>;
     if (!team) return <div className="container error-text">Takım bulunamadı.</div>;
 
@@ -64,8 +175,6 @@ function TeamDetail() {
     const canJoin = userInfo && (userInfo.teamId === null || userInfo.teamId === undefined);
     const pendingCount = team.pending_requests ? team.pending_requests.length : 0;
     const isPending = team.user_request_status === 'PENDING';
-
-
 
     // Sort players: Captain first
     const sortedPlayers = [...(team.players || [])].sort((a, b) => {
@@ -76,34 +185,118 @@ function TeamDetail() {
 
     return (
         <div className="container">
-            <Link to="/teams" className="back-link">
+            <button
+                onClick={() => navigate(-1)}
+                className="back-link"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '1rem' }}
+            >
                 <ArrowLeft size={20} />
-                Takımlara Dön
-            </Link>
+                Geri Dön
+            </button>
 
-            {/* Team Header */}
             {/* Team Header */}
             <div className="team-detail-header">
                 <div className="team-brand">
-                    {team.logo ? (
-                        <img src={team.logo} alt={team.name} className="team-detail-logo" />
-                    ) : (
-                        <div className="team-logo-placeholder-lg">
-                            <Users size={48} />
-                        </div>
-                    )}
+                    <div style={{ position: 'relative' }}>
+                        {team.logo ? (
+                            <img src={team.logo} alt={team.name} className="team-detail-logo" />
+                        ) : (
+                            <div className="team-logo-placeholder-lg">
+                                <Users size={48} />
+                            </div>
+                        )}
+
+                        {/* Edit Button Logic */}
+                        {isCaptain && (
+                            <>
+                                <input
+                                    type="file"
+                                    id="team-logo-upload"
+                                    style={{ display: 'none' }}
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                />
+                                <label
+                                    htmlFor="team-logo-upload"
+                                    className="edit-logo-btn"
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        right: 0,
+                                        background: 'var(--primary)',
+                                        color: 'white',
+                                        borderRadius: '50%',
+                                        width: '32px',
+                                        height: '32px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                        border: '2px solid var(--bg-card)'
+                                    }}
+                                    title="Logoyu Değiştir"
+                                >
+                                    <Camera size={16} />
+                                </label>
+                            </>
+                        )}
+                        {uploadingImage && (
+                            <div style={{
+                                position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+                                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <div className="spinner" style={{ width: '24px', height: '24px', borderWidth: '3px' }}></div>
+                            </div>
+                        )}
+                    </div>
+
                     <div>
                         <h1>{team.name}</h1>
-                        {team.short_name && <span className="team-short-name">{team.short_name}</span>}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', height: '32px' }}>
+                            {isEditingName ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <input
+                                        type="text"
+                                        value={editShortName}
+                                        onChange={(e) => setEditShortName(e.target.value.toUpperCase())}
+                                        maxLength={5}
+                                        style={{
+                                            width: '60px', padding: '4px', fontSize: '1rem', fontWeight: 'bold',
+                                            borderRadius: '4px', border: '1px solid var(--primary)', outline: 'none',
+                                            textTransform: 'uppercase'
+                                        }}
+                                        autoFocus
+                                    />
+                                    <button onClick={saveShortName} className="btn-icon-sm success"><Check size={16} /></button>
+                                    <button onClick={cancelEditingName} className="btn-icon-sm danger"><X size={16} /></button>
+                                </div>
+                            ) : (
+                                <>
+                                    {team.short_name && <span className="team-short-name">{team.short_name}</span>}
+                                    {isCaptain && (
+                                        <button
+                                            onClick={startEditingName}
+                                            className="edit-icon-btn"
+                                            title="Kısaltmayı Düzenle"
+                                        >
+                                            <Edit2 size={14} />
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="header-right-group">
+                    {/* ... (Existing stats and buttons) ... */}
                     <div className="mini-stats-row">
                         <div className="mini-stat">
                             <span className="ms-value text-default">{team.wins + team.draws + team.losses}</span>
                             <span className="ms-label">OM</span>
                         </div>
+                        {/* ... keep stat blocks ... */}
                         <div className="mini-stat">
                             <span className="ms-value text-success">{team.wins}</span>
                             <span className="ms-label">G</span>
@@ -135,6 +328,39 @@ function TeamDetail() {
                             </button>
                         )}
 
+                        {/* Leave Team Button */}
+                        {userInfo && userInfo.teamId === team.id && !isCaptain && (
+                            <button
+                                onClick={handleLeaveTeam}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                    color: '#ef4444',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s',
+                                    marginTop: '0.5rem'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                                    e.currentTarget.style.transform = 'none';
+                                }}
+                            >
+                                <X size={18} />
+                                Takımdan Ayrıl
+                            </button>
+                        )}
+
                         {isCaptain && pendingCount > 0 && (
                             <Link
                                 to={`/teams/${team.id}/requests`}
@@ -157,7 +383,7 @@ function TeamDetail() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
 
             <div className="detail-grid">
                 {/* Players Section */}
@@ -271,7 +497,57 @@ function TeamDetail() {
                     Kaptan isteğinizi onayladığında takıma dahil olacaksınız.
                 </p>
             </Modal>
-        </div>
+
+            {/* Leave Team Modal */}
+            <Modal
+                isOpen={showLeaveModal}
+                onClose={() => setShowLeaveModal(false)}
+                title="Takımdan Ayrıl"
+                footer={
+                    <>
+                        <button className="btn-ghost" onClick={() => setShowLeaveModal(false)}>Vazgeç</button>
+                        <button
+                            style={{
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                padding: '0.75rem 1.25rem',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontWeight: 600
+                            }}
+                            onClick={confirmLeaveTeam}
+                        >
+                            Ayrıl
+                        </button>
+                    </>
+                }
+            >
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                    <div style={{
+                        width: '60px', height: '60px', borderRadius: '50%',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 1.5rem auto'
+                    }}>
+                        <X size={32} />
+                    </div>
+                    <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Bu takımdan ayrılmak üzeresiniz.</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                        Bu işlem geri alınamaz. Takıma tekrar katılmak isterseniz yeni bir istek göndermeniz gerekecektir.
+                    </p>
+                </div>
+            </Modal>
+
+            {/* Image Editor Modal */}
+            <ImageEditorModal
+                isOpen={showImageEditor}
+                onClose={() => setShowImageEditor(false)}
+                imageSrc={selectedImage}
+                onSave={handleSaveCroppedImage}
+                aspectRatio={1} // Square for logo
+            />
+        </div >
     );
 }
 

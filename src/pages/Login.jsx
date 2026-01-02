@@ -90,6 +90,11 @@ const Login = () => {
                         <Lock size={18} style={{ position: 'absolute', left: '12px', top: '14px', color: '#888' }} />
                     </div>
                 </div>
+                <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+                    <Link to="/forgot-password" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textDecoration: 'none' }}>
+                        Şifremi Unuttum?
+                    </Link>
+                </div>
 
                 <button
                     type="submit"

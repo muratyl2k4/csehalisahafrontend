@@ -560,7 +560,13 @@
 .team-brand {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
+}
+
+.team-brand h1 {
+    margin-bottom: 0.25rem;
+    /* Tighten Name <-> Badge gap */
+    line-height: 1.2;
 }
 
 .team-detail-logo {
@@ -570,13 +576,25 @@
 }
 
 .team-short-name {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: var(--bg-hover);
+    /* More neutral gray/dark */
+    border: 1px solid transparent;
+    /* Effectively none */
+    /* Much subtler border */
     padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--text-muted);
-    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 24px;
+    min-width: 40px;
+    /* Ensure some width */
+    /* Removed margin: 0 auto to keep neighbors close */
 }
 
 /* Responsive Header */
@@ -585,11 +603,17 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
+        gap: 0.75rem;
+        /* Drastically reduced from 2rem */
+        padding: 1.5rem;
+        /* Slightly reduced padding too */
     }
 
     .team-brand {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
+        /* Reduced from 1rem */
+        margin-bottom: 1rem;
     }
 
     .header-right-group {

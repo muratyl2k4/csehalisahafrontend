@@ -121,8 +121,8 @@ p {
   .container {
     width: var(--container-width-mobile);
     max-width: var(--container-width-mobile);
-    padding: 85px 0 2rem 0;
-    /* Clear fixed navbar (70px) + spacing */
+    padding: 70px 0 2rem 0;
+    /* Clear fixed navbar (60px) + 10px spacing */
   }
 }
 
