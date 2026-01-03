@@ -24,7 +24,15 @@ export async function subscribeToPushNotifications() {
 
             // iOS Check: pushManager var mı?
             if (!register.pushManager) {
-                alert("HATA: Cihazınızda 'pushManager' bulunamadı.\n1. Uygulamayı 'Ana Ekrana Ekle'diniz mi?\n2. iOS sürümünüz 16.4 veya üstü mü?");
+                const isSecure = window.isSecureContext;
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+                alert(`HATA: pushManager yok.\n
+                - iOS: 18 (Teyitli)
+                - Güvenli Site (HTTPS): ${isSecure ? 'EVET' : 'HAYIR'}
+                - Uygulama Modu (Standalone): ${isStandalone ? 'EVET' : 'HAYIR'}
+                
+                Lütfen 'HAYIR' olan maddeyi düzeltin.`);
                 return;
             }
 
