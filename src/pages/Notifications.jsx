@@ -13,7 +13,8 @@ function Notifications() {
     const [selectedModalContent, setSelectedModalContent] = useState(null);
     const [broadcastMessage, setBroadcastMessage] = useState('');
     const [broadcastTitle, setBroadcastTitle] = useState('');
-    const [broadcastTarget, setBroadcastTarget] = useState('users'); // 'users' | 'all'
+    const [broadcastTarget, setBroadcastTarget] = useState('users'); // 'users' | 'all' | 'single'
+    const [targetUsername, setTargetUsername] = useState('');
 
     useEffect(() => {
         fetchNotifications();
@@ -21,11 +22,19 @@ function Notifications() {
 
     const handleBroadcast = async () => {
         if (!broadcastMessage.trim() || !broadcastTitle.trim()) return;
+        if (broadcastTarget === 'single' && !targetUsername.trim()) {
+            showError("Lütfen kullanıcı adı giriniz.");
+            return;
+        }
+
         try {
-            await sendBroadcastNotification(broadcastMessage, broadcastTitle, broadcastTarget);
-            success('Duyuru başarıyla gönderildi.');
+            const response = await sendBroadcastNotification(broadcastMessage, broadcastTitle, broadcastTarget, targetUsername);
+            // DEBUG: Backend'den gelen detaylı yanıtı göster
+            alert("Sonuç: " + (response.detail || "İşlem Tamam"));
+
             setBroadcastMessage('');
             setBroadcastTitle('');
+            if (broadcastTarget === 'single') setTargetUsername(''); // Clear username after send
             fetchNotifications(); // Refresh list to see own message (only valid for 'users' target or logged in user)
         } catch (err) {
             console.error(err);
@@ -107,7 +116,7 @@ function Notifications() {
                     </h3>
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Hedef Kitle:</label>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                                 <input
                                     type="radio"
@@ -128,8 +137,37 @@ function Notifications() {
                                 />
                                 Herkes (Anonim Dahil)
                             </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="target"
+                                    value="single"
+                                    checked={broadcastTarget === 'single'}
+                                    onChange={(e) => setBroadcastTarget(e.target.value)}
+                                />
+                                Tek Bir Kullanıcıya
+                            </label>
                         </div>
                     </div>
+
+                    {broadcastTarget === 'single' && (
+                        <input
+                            type="text"
+                            value={targetUsername}
+                            onChange={(e) => setTargetUsername(e.target.value)}
+                            placeholder="Kullanıcı Adı (Username)..."
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border-light)',
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                marginBottom: '1rem',
+                                fontFamily: 'inherit'
+                            }}
+                        />
+                    )}
 
                     <input
                         type="text"

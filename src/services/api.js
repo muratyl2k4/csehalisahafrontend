@@ -264,8 +264,8 @@ export const markNotificationRead = async (id) => {
 };
 
 
-export const sendBroadcastNotification = async (message, title = 'Duyuru', target = 'users') => {
-    const response = await api.post('/notifications/broadcast/', { message, title, target });
+export const sendBroadcastNotification = async (message, title = 'Duyuru', target = 'users', username = null) => {
+    const response = await api.post('/notifications/broadcast/', { message, title, target, username });
     return response.data;
 };
 

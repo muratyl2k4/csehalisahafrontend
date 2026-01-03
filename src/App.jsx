@@ -23,6 +23,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { subscribeToPushNotifications } from './utils/pushNotification';
+import PWAInstallPrompt from './components/layout/PWAInstallPrompt';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import './styles/main.css';
@@ -85,6 +86,7 @@ function App() {
         <VerificationEnforcer>
           <ScrollToTop />
           <Navbar />
+          <PWAInstallPrompt /> {/* iOS Install Prompt */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

@@ -72,8 +72,7 @@ export async function subscribeToPushNotifications() {
             }, { headers });
 
             console.log('Push Notification Subscribed Successfully');
-            // DEBUG: iPhone'da durumu görmek için geçici alert
-            alert("Bildirim Kaydı Başarılı! ✅");
+            // alert("Bildirim Kaydı Başarılı! ✅");
         } catch (error) {
             console.error('Push Notification Subscription Failed:', error);
             // DEBUG: Hata görmek için
