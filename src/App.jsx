@@ -33,9 +33,16 @@ const VerificationEnforcer = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    // 1. Bildirim İzni ve Kaydı (Her sayfa değişiminde/login'de kontrol et)
     const token = localStorage.getItem('access_token');
+    if (token && 'serviceWorker' in navigator) {
+      subscribeToPushNotifications().catch(err => console.error("Push sub error:", err));
+    }
+
+    // 2. Email Doğrulama Kontrolü
     if (token) {
       // Check if user is verified
+      // ... existing logic ...
       // We assume user_info is updated upon login/refresh
       const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
 

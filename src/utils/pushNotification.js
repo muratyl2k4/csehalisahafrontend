@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const publicVapidKey = 'BOHqfyMHZP-9Po_eb3XI-0gK-VZccdrFYroITL_3cZzNj_X8umbTAqnkYkwW7Q_ao-kaYebHFPv9k_nvsSCrHFc';
+const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -26,30 +26,38 @@ export async function subscribeToPushNotifications() {
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
             });
-
             // Backend'e abonelik bilgisini gönder
-            // Backend'e abonelik bilgisini gönder
-            const API_URL = import.meta.env.VITE_API_URL || 'https://muratyl2k4.pythonanywhere.com/api/';
-            // Clean URL to remove trailing slash if present for cleaner concatenation, though api/ is in VITE_API_URL usually.
-            // Actually, webpush is at root/webpush/, not api/webpush/.
-            // Let's use the domain base.
+            // API_URL genellikle 'http://domain.com/api/' formatındadır.
+            // WebPush endpointimiz '/webpush/' veya '/api/notifications/...' altında olabilir.
+            // Bizim kurgumuzda: /api/notifications/register_subscription/
 
-            // Allow flexibility
-            const BASE_DOMAIN = 'https://muratyl2k4.pythonanywhere.com';
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
-            await axios.post(`${BASE_DOMAIN}/webpush/save_information`, {
-                status_type: 'subscribe',
-                subscription: subscription.toJSON(),
+            // API_URL'den base domaini çıkarmaya gerek yok, direkt API_URL kullanabiliriz 
+            // Çünkü endpointimiz: API_URL + 'notifications/register_subscription/'
+            // Eğer API_URL '.../api/' ile bitiyorsa:
+
+            const subscriptionJSON = subscription.toJSON();
+            console.log('Sending subscription:', subscriptionJSON);
+
+            // Headers hazırla
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // Eğer token varsa ekle (Kullanıcı eşleştirmesi için)
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Custom view kullanıyoruz
+            await axios.post(`${API_URL}notifications/register_subscription/`, {
+                subscription: subscriptionJSON,
                 browser: navigator.userAgent
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Token eklenecek (Auth yapısı varsa)
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
-            });
+            }, { headers });
 
-            console.log('Push Notification Subscribed');
+            console.log('Push Notification Subscribed Successfully');
         } catch (error) {
             console.error('Push Notification Subscription Failed:', error);
         }

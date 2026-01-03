@@ -12,18 +12,21 @@ function Notifications() {
     const [loading, setLoading] = useState(true);
     const [selectedModalContent, setSelectedModalContent] = useState(null);
     const [broadcastMessage, setBroadcastMessage] = useState('');
+    const [broadcastTitle, setBroadcastTitle] = useState('');
+    const [broadcastTarget, setBroadcastTarget] = useState('users'); // 'users' | 'all'
 
     useEffect(() => {
         fetchNotifications();
     }, []);
 
     const handleBroadcast = async () => {
-        if (!broadcastMessage.trim()) return;
+        if (!broadcastMessage.trim() || !broadcastTitle.trim()) return;
         try {
-            await sendBroadcastNotification(broadcastMessage);
-            success('Duyuru tüm kullanıcılara başarıyla gönderildi.');
+            await sendBroadcastNotification(broadcastMessage, broadcastTitle, broadcastTarget);
+            success('Duyuru başarıyla gönderildi.');
             setBroadcastMessage('');
-            fetchNotifications(); // Refresh list to see own message
+            setBroadcastTitle('');
+            fetchNotifications(); // Refresh list to see own message (only valid for 'users' target or logged in user)
         } catch (err) {
             console.error(err);
             showError('Duyuru gönderilemedi.');
@@ -102,10 +105,53 @@ function Notifications() {
                         <Info size={20} color="var(--primary)" />
                         Sistem Duyurusu Yayınla (Admin Paneli)
                     </h3>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Hedef Kitle:</label>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="target"
+                                    value="users"
+                                    checked={broadcastTarget === 'users'}
+                                    onChange={(e) => setBroadcastTarget(e.target.value)}
+                                />
+                                Sadece Kayıtlı Kullanıcılar
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="target"
+                                    value="all"
+                                    checked={broadcastTarget === 'all'}
+                                    onChange={(e) => setBroadcastTarget(e.target.value)}
+                                />
+                                Herkes (Anonim Dahil)
+                            </label>
+                        </div>
+                    </div>
+
+                    <input
+                        type="text"
+                        value={broadcastTitle}
+                        onChange={(e) => setBroadcastTitle(e.target.value)}
+                        placeholder="Bildirim Başlığı"
+                        style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-light)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            marginBottom: '1rem',
+                            fontFamily: 'inherit'
+                        }}
+                    />
+
                     <textarea
                         value={broadcastMessage}
                         onChange={(e) => setBroadcastMessage(e.target.value)}
-                        placeholder="Tüm kullanıcılara gönderilecek mesajı yazın..."
+                        placeholder="Mesaj içeriği..."
                         style={{
                             width: '100%',
                             padding: '1rem',
@@ -122,9 +168,9 @@ function Notifications() {
                         <button
                             className="btn-primary"
                             onClick={handleBroadcast}
-                            disabled={!broadcastMessage.trim()}
+                            disabled={!broadcastMessage.trim() || !broadcastTitle.trim()}
                         >
-                            Duyuruyu Yayınla
+                            Gönder ({broadcastTarget === 'all' ? 'Herkese' : 'Kullanıcılara'})
                         </button>
                     </div>
                 </div>
