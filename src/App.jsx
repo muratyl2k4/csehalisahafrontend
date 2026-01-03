@@ -65,6 +65,13 @@ const VerificationEnforcer = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    // PWA ve Bildirim izni iste
+    if ('serviceWorker' in navigator) {
+      subscribeToPushNotifications();
+    }
+  }, []);
+
   return (
     <ToastProvider>
       <Router>

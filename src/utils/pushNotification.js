@@ -28,7 +28,16 @@ export async function subscribeToPushNotifications() {
             });
 
             // Backend'e abonelik bilgisini gönder
-            await axios.post('http://127.0.0.1:8000/webpush/save_information', {
+            // Backend'e abonelik bilgisini gönder
+            const API_URL = import.meta.env.VITE_API_URL || 'https://muratyl2k4.pythonanywhere.com/api/';
+            // Clean URL to remove trailing slash if present for cleaner concatenation, though api/ is in VITE_API_URL usually.
+            // Actually, webpush is at root/webpush/, not api/webpush/.
+            // Let's use the domain base.
+
+            // Allow flexibility
+            const BASE_DOMAIN = 'https://muratyl2k4.pythonanywhere.com';
+
+            await axios.post(`${BASE_DOMAIN}/webpush/save_information`, {
                 status_type: 'subscribe',
                 subscription: subscription.toJSON(),
                 browser: navigator.userAgent
@@ -36,7 +45,7 @@ export async function subscribeToPushNotifications() {
                 headers: {
                     'Content-Type': 'application/json',
                     // Token eklenecek (Auth yapısı varsa)
-                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }
             });
 
