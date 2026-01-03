@@ -22,6 +22,12 @@ export async function subscribeToPushNotifications() {
         try {
             const register = await navigator.serviceWorker.ready;
 
+            // iOS Check: pushManager var mı?
+            if (!register.pushManager) {
+                alert("HATA: Cihazınızda 'pushManager' bulunamadı.\n1. Uygulamayı 'Ana Ekrana Ekle'diniz mi?\n2. iOS sürümünüz 16.4 veya üstü mü?");
+                return;
+            }
+
             const subscription = await register.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
@@ -59,7 +65,7 @@ export async function subscribeToPushNotifications() {
 
             console.log('Push Notification Subscribed Successfully');
             // DEBUG: iPhone'da durumu görmek için geçici alert
-            // alert("Bildirim Kaydı Başarılı! ✅"); 
+            alert("Bildirim Kaydı Başarılı! ✅");
         } catch (error) {
             console.error('Push Notification Subscription Failed:', error);
             // DEBUG: Hata görmek için
