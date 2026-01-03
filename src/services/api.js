@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -17,6 +17,19 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        // Handle 401 Unauthorized errors globally
+        if (error.response && error.response.status === 401) {
+            // If checking auth status or public endpoint fails with 401, it means token is invalid.
+            // Clear storage to prevent infinite loop of 401s
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                console.warn("Session expired or invalid token. Logging out.");
+                clearTokens();
+                localStorage.removeItem('user_info');
+                // Redirect to login page
+                window.location.href = '/login';
+            }
+        }
         return Promise.reject(error);
     }
 );
