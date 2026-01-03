@@ -17,7 +17,7 @@
 .nav-container {
     max-width: var(--container-width);
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 3rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,6 +34,7 @@
     font-size: 1.5rem;
     color: white;
     transition: all 0.3s ease;
+    transform: scale(1);
 }
 
 .nav-logo:hover {
@@ -45,11 +46,12 @@
 }
 
 .logo-text {
-    background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: -0.5px;
+    font-size: 28px;
 }
 
 /* Nav Menu */
@@ -175,7 +177,7 @@
         justify-content: space-between;
         /* Logo Left, Bell Right */
         align-items: center;
-        padding: 0 0.5rem;
+        padding: 0 1rem;
         /* Space from edges */
         transform: none;
     }
@@ -183,7 +185,12 @@
     .nav-logo {
         position: static;
         z-index: 1;
-        font-size: 1.4rem;
+        margin-left: -20px;
+        transform: scale(0.8);
+    }
+
+    .nav-logo:hover {
+        transform: scale(0.85);
     }
 
     /* Bottom Navigation Bar */
@@ -245,6 +252,7 @@
         /* Small text */
         font-weight: 500;
         letter-spacing: 0.3px;
+        color: #ffffff;
     }
 
     .nav-link svg {
@@ -252,22 +260,44 @@
         height: 20px;
         display: block !important;
         margin-bottom: 2px;
+        color: #ffffff;
     }
 
     /* Active State */
+    /* Active State - Premium White Glow */
     .nav-link.active {
         background: transparent;
-        color: #818cf8;
-        /* Light Indigo */
+        color: #ffffff;
+        /* Pure White */
         box-shadow: none;
+        animation: navBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .nav-link.active svg {
-        filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));
+        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
+        /* White Neon Glow */
+        transform: translateY(-2px);
+    }
+
+    /* Active Icon Animation */
+    @keyframes navBounce {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 
     .nav-link.active span {
         font-weight: 700;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        /* Text Glow */
     }
 
     .nav-link:hover {

@@ -1,0 +1,16 @@
+{
+    "name": "CSE Jingle League",
+    "short_name": "CSE Lig",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/logo1.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -43,7 +43,7 @@ function Navbar() {
         <nav className="navbar">
             <div className="nav-container">
                 <Link to="/" className="nav-logo" onClick={closeMenu}>
-                    <Swords size={28} className="logo-icon" />
+                    <img src="/logo11.png" alt="CSE-LİG Logo" style={{ height: '50px', width: 'auto', objectFit: 'contain' }} />
                     <span className="logo-text">CSE-LİG</span>
                 </Link>
 
