@@ -43,6 +43,7 @@ const NotificationPermissionPrompt = () => {
             color: 'white',
             zIndex: 9998, // Below PWA Install Prompt (9999) if both active
             padding: '12px 16px',
+            paddingTop: 'calc(12px + env(safe-area-inset-top))',
             boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             display: 'flex',
             alignItems: 'center',
