@@ -1,22 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Share, X } from "lucide-react";
+import { Share, X, Download } from "lucide-react";
 
 const PWAInstallPrompt = () => {
     const [showPrompt, setShowPrompt] = useState(false);
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [platform, setPlatform] = useState(null); // 'ios' or 'android'
 
     useEffect(() => {
-        // 1. Check if iOS
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // 1. Android / Chrome (beforeinstallprompt)
+        const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setPlatform('android');
+            setShowPrompt(true);
+        };
 
-        // 2. Check if already installed (Standalone mode)
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // 2. iOS Check
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-        // Show only if iOS AND NOT Standalone
         if (isIOS && !isStandalone) {
-            // Check if user dismissed it recently (optional, let's show always for now until installed)
+            setPlatform('ios');
             setShowPrompt(true);
         }
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
     }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setShowPrompt(false);
+        }
+        setDeferredPrompt(null);
+    };
 
     if (!showPrompt) return null;
 
@@ -42,7 +65,7 @@ const PWAInstallPrompt = () => {
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#fff' }}>
-                    Uygulamayı Yükle 📲
+                    {platform === 'ios' ? 'Uygulamayı Yükle 📲' : 'Uygulamayı İndir 🚀'}
                 </h3>
                 <button
                     onClick={() => setShowPrompt(false)}
@@ -56,19 +79,45 @@ const PWAInstallPrompt = () => {
                 Bildirimleri alabilmek için bu siteyi ana ekranınıza ekleyin.
             </p>
 
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                fontSize: '14px',
-                color: '#4ade80',
-                background: 'rgba(74, 222, 128, 0.1)',
-                padding: '10px',
-                borderRadius: '8px'
-            }}>
-                <Share size={20} />
-                <span>Paylaş butonuna basıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.</span>
-            </div>
+            {platform === 'ios' ? (
+                // iOS Guide
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    fontSize: '14px',
+                    color: '#4ade80',
+                    background: 'rgba(74, 222, 128, 0.1)',
+                    padding: '10px',
+                    borderRadius: '8px'
+                }}>
+                    <Share size={20} />
+                    <span>Paylaş butonuna basıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.</span>
+                </div>
+            ) : (
+                // Android Button
+                <button
+                    onClick={handleInstallClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#4f46e5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <Download size={20} />
+                    Yükle (Android)
+                </button>
+            )}
         </div>
     );
 };
