@@ -4,10 +4,30 @@ import { Share, X, Download } from "lucide-react";
 const PWAInstallPrompt = () => {
     const [showPrompt, setShowPrompt] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
-    const [platform, setPlatform] = useState(null); // 'ios' or 'android'
+    const [platform, setPlatform] = useState(null); // 'ios', 'android', or null
 
     useEffect(() => {
-        // 1. Android / Chrome (beforeinstallprompt)
+        // 1. Check Install State
+        // iOS Safari "navigator.standalone" property support
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (isStandalone) return;
+
+        // 2. Detect OS
+        const ua = navigator.userAgent;
+        // iPad detection (iPadOS 13+ requests desktop site by default)
+        const isIPad = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || isIPad;
+        const isAndroid = /Android/.test(ua);
+
+        if (isIOS) {
+            setPlatform('ios');
+            setShowPrompt(true);
+        } else if (isAndroid) {
+            setPlatform('android');
+            setShowPrompt(true);
+        }
+
+        // 3. Listen for Native Install Prompt (Android/Chrome)
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -17,29 +37,12 @@ const PWAInstallPrompt = () => {
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // 2. iOS Check
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-        if (isIOS && !isStandalone) {
-            setPlatform('ios');
-            setShowPrompt(true);
-        }
-
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
     }, []);
 
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            setShowPrompt(false);
-        }
-        setDeferredPrompt(null);
-    };
+    // ... handleInstallClick ...
 
     if (!showPrompt) return null;
 
@@ -57,7 +60,7 @@ const PWAInstallPrompt = () => {
             borderRadius: '16px',
             padding: '16px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            zIndex: 9999,
+            zIndex: 100000,
             color: 'white',
             display: 'flex',
             flexDirection: 'column',
@@ -82,41 +85,34 @@ const PWAInstallPrompt = () => {
             {platform === 'ios' ? (
                 // iOS Guide
                 <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    fontSize: '14px',
-                    color: '#4ade80',
-                    background: 'rgba(74, 222, 128, 0.1)',
-                    padding: '10px',
-                    borderRadius: '8px'
+                    display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px',
+                    color: '#4ade80', background: 'rgba(74, 222, 128, 0.1)', padding: '10px', borderRadius: '8px'
                 }}>
                     <Share size={20} />
                     <span>Paylaş butonuna basıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.</span>
                 </div>
-            ) : (
-                // Android Button
+            ) : platform === 'android' && deferredPrompt ? (
+                // Android Auto-Install Button (If event fired)
                 <button
                     onClick={handleInstallClick}
                     style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        width: '100%',
-                        padding: '12px',
-                        backgroundColor: '#4f46e5',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        width: '100%', padding: '12px', backgroundColor: '#4f46e5', color: 'white',
+                        border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '600', cursor: 'pointer'
                     }}
                 >
                     <Download size={20} />
                     Yükle (Android)
                 </button>
+            ) : (
+                // Android Manual Guide (Fallback)
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px',
+                    color: '#fbbf24', background: 'rgba(251, 191, 36, 0.1)', padding: '10px', borderRadius: '8px'
+                }}>
+                    <Download size={20} />
+                    <span>Tarayıcı menüsünden (3 nokta) <b>"Uygulamayı Yükle"</b> seçeneğini seçin.</span>
+                </div>
             )}
         </div>
     );
