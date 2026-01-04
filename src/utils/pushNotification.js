@@ -79,6 +79,9 @@ export async function subscribeToPushNotifications(force = false) {
             // ...
 
             // Custom view kullanıyoruz
+            const token = localStorage.getItem('access_token');
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
             await axios.post(`${API_URL}notifications/register_subscription/`, {
                 subscription: subscription.toJSON(),
                 browser: navigator.userAgent
