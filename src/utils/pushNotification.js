@@ -1,9 +1,4 @@
 import axios from 'axios';
-
-
-import axios from 'axios';
-
-
 // HARDCODED KEY (Debugging iOS Issue - Env Var propagation fix)
 export const publicVapidKey = "BCQox-zB7EEWpLXmEcOBKyaiqNqMq3jUWHPU4L52mn1H3EVPGrAUUAcAZDwIiXxFwIeaYdVpzqd5TPcrPCDQyJQ";
 // const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
