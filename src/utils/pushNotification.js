@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 
-export const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+import axios from 'axios';
+
+
+// HARDCODED KEY (Debugging iOS Issue - Env Var propagation fix)
+export const publicVapidKey = "BCQox-zB7EEWpLXmEcOBKyaiqNqMq3jUWHPU4L52mn1H3EVPGrAUUAcAZDwIiXxFwIeaYdVpzqd5TPcrPCDQyJQ";
+// const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -40,6 +45,9 @@ export async function subscribeToPushNotifications(force = false) {
 
             // FORCE MODE: Unsubscribe existing if demanded
             if (force) {
+                // DEBUG ALERT: Telefondaki anahtarı gözle kontrol edelim
+                alert(`ONARIM BAŞLIYOR.\nKullanılacak Anahtar:\n${publicVapidKey.substring(0, 15)}...`);
+
                 const existingSub = await register.pushManager.getSubscription();
                 if (existingSub) {
                     await existingSub.unsubscribe();
