@@ -227,7 +227,7 @@ function Notifications() {
                 }}>
                     <h4 style={{ margin: '0 0 0.5rem 0', color: '#d63031', fontSize: '0.9rem' }}>⚠️ Bildirim Sorun Giderici</h4>
                     <p style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '0.5rem' }}>
-                        <b>Sürüm: v2.0 (Yeni)</b> <br />
+                        <b>Sürüm: v3.0 (RESET)</b> <br />
                         Aktif Anahtar: <b>{publicVapidKey ? `${publicVapidKey.substring(0, 6)}...${publicVapidKey.substring(publicVapidKey.length - 6)}` : 'YOK'}</b>
                     </p>
                     <button
