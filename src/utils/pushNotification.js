@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+export const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -17,13 +18,14 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-export async function subscribeToPushNotifications() {
+export async function subscribeToPushNotifications(force = false) {
     if ('serviceWorker' in navigator) {
         try {
             const register = await navigator.serviceWorker.ready;
 
             // iOS Check: pushManager var mı?
             if (!register.pushManager) {
+                // ... (Existing check)
                 const isSecure = window.isSecureContext;
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
@@ -34,6 +36,15 @@ export async function subscribeToPushNotifications() {
                 
                 Lütfen 'HAYIR' olan maddeyi düzeltin.`);
                 return;
+            }
+
+            // FORCE MODE: Unsubscribe existing if demanded
+            if (force) {
+                const existingSub = await register.pushManager.getSubscription();
+                if (existingSub) {
+                    await existingSub.unsubscribe();
+                    console.log("Existing subscription unsubscribed due to force flag.");
+                }
             }
 
             const subscription = await register.pushManager.subscribe({

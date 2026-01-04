@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Info, ChevronRight, X } from 'lucide-react';
 import { getNotifications, markNotificationRead, markAllNotificationsRead, sendBroadcastNotification } from '../services/api';
+import { subscribeToPushNotifications, publicVapidKey } from '../utils/pushNotification';
 import '../styles/main.css';
 import { useToast } from '../context/ToastContext';
 
@@ -211,6 +212,46 @@ function Notifications() {
                             Gönder ({broadcastTarget === 'all' ? 'Herkese' : 'Kullanıcılara'})
                         </button>
                     </div>
+                </div>
+            )}
+
+            {/* Debug & Repair Panel */}
+            {JSON.parse(localStorage.getItem('user_info') || '{}').is_staff && (
+                <div style={{
+                    marginTop: '1rem',
+                    padding: '1rem',
+                    border: '1px dashed #d63031',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(214, 48, 49, 0.1)',
+                    marginBottom: '2rem'
+                }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#d63031', fontSize: '0.9rem' }}>⚠️ Bildirim Sorun Giderici</h4>
+                    <p style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '0.5rem' }}>
+                        Aktif Anahtar (Frontend): <b>{publicVapidKey ? publicVapidKey.substring(0, 10) + '...' : 'YOK'}</b>
+                    </p>
+                    <button
+                        onClick={async () => {
+                            if (window.confirm("Mevcut abonelik silinip tekrar alınacak. Emin misiniz?")) {
+                                try {
+                                    await subscribeToPushNotifications(true); // check force=true
+                                    alert("Onarım Başarılı! ✅\nYeni abonelik sunucuya gönderildi.");
+                                } catch (e) {
+                                    alert("Onarım Hatası: " + e.message);
+                                }
+                            }
+                        }}
+                        style={{
+                            backgroundColor: '#d63031',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Bildirim Servisini Onar (Force Reset)
+                    </button>
                 </div>
             )}
 
