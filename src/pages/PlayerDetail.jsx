@@ -40,7 +40,7 @@ function PlayerDetail() {
         <div className="container">
             <div className="error-container" style={{ textAlign: 'center', padding: '3rem' }}>
                 <p style={{ color: '#ef4444', fontSize: '1.2rem' }}>{error}</p>
-                <button onClick={() => navigate(-1)} className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+                <button onClick={() => navigate('/search')} className="btn btn-secondary" style={{ marginTop: '1rem' }}>
                     Geri Dön
                 </button>
             </div>
@@ -52,7 +52,13 @@ function PlayerDetail() {
     return (
         <div className="container">
             <button
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                    if (window.history.state && window.history.state.idx > 0) {
+                        navigate(-1);
+                    } else {
+                        navigate('/search?tab=players&page=1'); // Fallback
+                    }
+                }}
                 style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2rem', fontWeight: 500,
                     background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit'
