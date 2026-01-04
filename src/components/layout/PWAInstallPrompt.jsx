@@ -7,28 +7,35 @@ const PWAInstallPrompt = () => {
     const [platform, setPlatform] = useState(null); // 'ios', 'android', or null
 
     useEffect(() => {
-        // 1. Check Install State
-        // iOS Safari "navigator.standalone" property support
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        if (isStandalone) return;
+        // 1. Detect OS
+        const ua = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+        const isAndroid = /android/.test(ua);
 
-        // 2. Detect OS
-        const ua = navigator.userAgent;
-        // iPad detection (iPadOS 13+ requests desktop site by default)
-        const isIPad = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-        const isIOS = /iPad|iPhone|iPod/.test(ua) || isIPad;
-        const isAndroid = /Android/.test(ua);
+        // Check if already standalone (don't show if already installed)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (isStandalone) {
+            console.log("App is already in standalone mode.");
+            return;
+        }
 
         if (isIOS) {
             setPlatform('ios');
-            setShowPrompt(true);
+            // iOS always needs manual guide, show immediately
+            setTimeout(() => setShowPrompt(true), 2000); // Delay slightly for better UX
         } else if (isAndroid) {
             setPlatform('android');
-            setShowPrompt(true);
+            // For Android, we wait a bit for the 'beforeinstallprompt' event.
+            // If it doesn't fire (e.g., Firefox), we still show the manual guide after a timeout.
+            setTimeout(() => {
+                setShowPrompt(true);
+            }, 3000);
         }
 
-        // 3. Listen for Native Install Prompt (Android/Chrome)
+        // 2. Listen for Native Install Prompt (Chrome/Android)
         const handleBeforeInstallPrompt = (e) => {
+            console.log("beforeinstallprompt fired");
             e.preventDefault();
             setDeferredPrompt(e);
             setPlatform('android');
@@ -42,7 +49,18 @@ const PWAInstallPrompt = () => {
         };
     }, []);
 
-    // ... handleInstallClick ...
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) {
+            alert("Otomatik yükleme şu an yapılamıyor. Lütfen tarayıcı menüsünden 'Uygulamayı Yükle' seçeneğini kullanın.");
+            return;
+        }
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to install prompt: ${outcome}`);
+        setDeferredPrompt(null);
+        setShowPrompt(false);
+    };
 
     if (!showPrompt) return null;
 
@@ -92,7 +110,7 @@ const PWAInstallPrompt = () => {
                     <span>Paylaş butonuna basıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.</span>
                 </div>
             ) : platform === 'android' && deferredPrompt ? (
-                // Android Auto-Install Button (If event fired)
+                // Android Auto-Install Button (Only if event fired)
                 <button
                     onClick={handleInstallClick}
                     style={{

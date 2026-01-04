@@ -12,7 +12,13 @@ export const AuthProvider = ({ children }) => {
         const userInfo = localStorage.getItem('user_info');
 
         if (token && userInfo) {
-            setUser(JSON.parse(userInfo));
+            try {
+                setUser(JSON.parse(userInfo));
+            } catch (e) {
+                console.error("Failed to parse user info, clearing session.", e);
+                localStorage.clear();
+                setUser(null);
+            }
         }
         setLoading(false);
     }, []);
