@@ -38,8 +38,13 @@ const VerificationEnforcer = ({ children }) => {
     // 1. Bildirim Kaydı (Sadece İZİN VERİLMİŞSE otomatik yenile)
     // iOS'ta "User Gesture" hatası almamak için izin verilmemişse dokunmuyoruz.
     const token = localStorage.getItem('access_token');
-    if (token && 'serviceWorker' in navigator && Notification.permission === 'granted') {
-      subscribeToPushNotifications().catch(err => console.error("Push sub error:", err));
+    // iOS Safari Render sorunu için try-catch
+    try {
+      if (token && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+        subscribeToPushNotifications().catch(err => console.error("Push sub error:", err));
+      }
+    } catch (e) {
+      console.warn("Safari Push Check Skipped:", e);
     }
 
     // 2. Email Doğrulama Kontrolü
@@ -77,10 +82,16 @@ const VerificationEnforcer = ({ children }) => {
 function App() {
   useEffect(() => {
     // Sadece ZATEN İZİN VARSA sessizce aboneliği tazele.
-    // İzin yoksa (Default), NotificationPermissionPrompt bileşeni devreye girecek.
-    if ('serviceWorker' in navigator && Notification.permission === 'granted') {
-      subscribeToPushNotifications();
-    }
+    const attemptAutoSub = async () => {
+      try {
+        if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+          await subscribeToPushNotifications();
+        }
+      } catch (e) {
+        console.log("Auto-sub failed silently:", e);
+      }
+    };
+    attemptAutoSub();
   }, []);
 
   return (

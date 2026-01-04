@@ -204,8 +204,8 @@
         /* Force bottom */
         left: 0;
         width: 100%;
-        height: 70px;
-        /* Standard visible height */
+        height: calc(60px + env(safe-area-inset-bottom, 10px));
+        /* Allow height to expand for safe area */
         background: #0f172a;
         /* Solid dark background */
         backdrop-filter: blur(10px);
@@ -215,6 +215,8 @@
         /* Even spacing */
         align-items: center;
         padding: 0 0.5rem;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        /* Push icons up away from home indicator */
         margin: 0;
         z-index: 9999;
         transform: translateY(0) !important;
