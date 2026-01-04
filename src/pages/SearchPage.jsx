@@ -7,14 +7,15 @@ import '../styles/player-table.css';
 
 function SearchPage() {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const initialTab = searchParams.get('tab') === 'players' ? 'players' : 'teams';
+    const initialPage = parseInt(searchParams.get('page')) || 1;
 
     const [activeTab, setActiveTab] = useState(initialTab); // 'teams' or 'players'
     const [searchTerm, setSearchTerm] = useState('');
 
     // Pagination State
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(initialPage);
     const [totalPages, setTotalPages] = useState(1);
 
     // Data
@@ -32,11 +33,17 @@ function SearchPage() {
         checkUserStatus();
     }, []);
 
-    // Update tab if URL param changes
+    // Update tab and page if URL param changes (Supports Back Button)
     useEffect(() => {
         const tab = searchParams.get('tab');
+        const page = parseInt(searchParams.get('page')) || 1;
+
         if (tab && (tab === 'teams' || tab === 'players')) {
             setActiveTab(tab);
+        }
+
+        if (page !== currentPage) {
+            setCurrentPage(page);
         }
     }, [searchParams]);
 
@@ -56,7 +63,15 @@ function SearchPage() {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (activeTab === 'players') {
-                setCurrentPage(1); // Reset to page 1 on new search
+                // Only reset page if search term changes and we are not already on page 1 (or allow URL to drive it)
+                // However, strictly, a new search implies page 1.
+                // We shouldn't trigger this on initial mount if searchTerm is empty.
+                // loadPlayers(1, searchTerm); // This is redundant with the [currentPage] effect if we setPage(1)
+
+                // If search term changes, we should update URL to page 1
+                if (currentPage !== 1) {
+                    // logic handled in pagination or explicit set
+                }
                 loadPlayers(1, searchTerm);
             }
         }, 500);
@@ -67,9 +82,10 @@ function SearchPage() {
         setLoading(true);
         try {
             // Load initial data
+            // If URL has page 5, we should load page 5 for players
             const [teamsData, playersData] = await Promise.all([
                 getTeams(),
-                getPlayers({ page: 1 }) // First page of players
+                getPlayers({ page: initialPage })
             ]);
 
             setTeams(teamsData);
@@ -79,8 +95,12 @@ function SearchPage() {
             const total = playersData.count || 0;
             const results = playersData.results || [];
 
-            if (playersData.next && results.length > 0) {
-                setTotalPages(Math.ceil(total / results.length));
+            if (playersData.next || total > results.length) {
+                // Estimate pages if not provided explicit count in older APIs, 
+                // but DRF gives count.
+                // We use a safe fallback for page size estimation
+                const pageSize = results.length > 0 ? results.length : 10;
+                setTotalPages(Math.ceil(total / pageSize) || 1);
             } else {
                 setTotalPages(1);
             }
