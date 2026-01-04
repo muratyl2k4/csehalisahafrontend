@@ -38,9 +38,28 @@ export async function subscribeToPushNotifications(force = false) {
                 return;
             }
 
-            // FORCE MODE: Unsubscribe existing if demanded
-            if (force) {
-                // DEBUG ALERT removed
+            // ----------------------------------------------------
+            // VAPID KEY MIGRATION / REPAIR LOGIC
+            // ----------------------------------------------------
+            const storedKey = localStorage.getItem('vapid_public_key');
+            const currentKey = publicVapidKey;
+
+            // If the key has changed (or first run with this logic), we MUST unsubscribe old one
+            // because the old subscription is cryptographically invalid for the new Private Key.
+            if (storedKey !== currentKey) {
+                console.log("⚠️ VAPID Key changed (or new). Validating subscription...");
+                try {
+                    const existingSub = await register.pushManager.getSubscription();
+                    if (existingSub) {
+                        await existingSub.unsubscribe();
+                        console.log("♻️ Old subscription unsubscribed for key migration.");
+                    }
+                    localStorage.setItem('vapid_public_key', currentKey);
+                } catch (e) {
+                    console.error("Key migration error:", e);
+                }
+            } else if (force) {
+                // Manual force logic
                 const existingSub = await register.pushManager.getSubscription();
                 if (existingSub) {
                     await existingSub.unsubscribe();
@@ -55,7 +74,7 @@ export async function subscribeToPushNotifications(force = false) {
 
             // ... (rest of code)
 
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+            const API_URL = 'https://muratyl2k4.pythonanywhere.com/api/';
 
             // ...
 

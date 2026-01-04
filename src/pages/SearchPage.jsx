@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Search, Trophy, Users, PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTeams, getPlayers, refreshUserInfo, isAuthenticated } from '../services/api';
@@ -13,6 +13,8 @@ function SearchPage() {
 
     const [activeTab, setActiveTab] = useState(initialTab); // 'teams' or 'players'
     const [searchTerm, setSearchTerm] = useState('');
+    // Track previous search term to prevent reset on mount/back-nav
+    const prevSearchTerm = useRef(searchTerm);
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(initialPage);
@@ -59,19 +61,16 @@ function SearchPage() {
         }
     }, [currentPage, activeTab]);
 
-    // Debounced Search for players to prevent too many API calls
     useEffect(() => {
+        // Skip if search term hasn't changed (e.g. on mount or same value)
+        if (prevSearchTerm.current === searchTerm) {
+            return;
+        }
+        prevSearchTerm.current = searchTerm;
+
         const timer = setTimeout(() => {
             if (activeTab === 'players') {
-                // Only reset page if search term changes and we are not already on page 1 (or allow URL to drive it)
-                // However, strictly, a new search implies page 1.
-                // We shouldn't trigger this on initial mount if searchTerm is empty.
-                // loadPlayers(1, searchTerm); // This is redundant with the [currentPage] effect if we setPage(1)
-
-                // If search term changes, we should update URL to page 1
-                if (currentPage !== 1) {
-                    // logic handled in pagination or explicit set
-                }
+                setCurrentPage(1);
                 loadPlayers(1, searchTerm);
             }
         }, 500);
@@ -81,29 +80,12 @@ function SearchPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            // Load initial data
-            // If URL has page 5, we should load page 5 for players
-            const [teamsData, playersData] = await Promise.all([
-                getTeams(),
-                getPlayers({ page: initialPage })
-            ]);
+            // Only load Teams here. Players are handled by the useEffect([currentPage])
+            const teamsData = await getTeams();
 
             setTeams(teamsData);
 
-            // Handle Players Response
-            setPlayers(playersData.results || []);
-            const total = playersData.count || 0;
-            const results = playersData.results || [];
-
-            if (playersData.next || total > results.length) {
-                // Estimate pages if not provided explicit count in older APIs, 
-                // but DRF gives count.
-                // We use a safe fallback for page size estimation
-                const pageSize = results.length > 0 ? results.length : 10;
-                setTotalPages(Math.ceil(total / pageSize) || 1);
-            } else {
-                setTotalPages(1);
-            }
+            // We don't set players here anymore to avoid race condition with the useEffect
 
             setLoading(false);
         } catch (err) {
@@ -184,7 +166,13 @@ function SearchPage() {
     const currentPlayers = players;
 
     // Pagination Logic (Backend handled)
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('page', pageNumber);
+        setSearchParams(newParams);
+        window.scrollTo(0, 0);
+    };
 
     if (error) return (
         <div className="container">
