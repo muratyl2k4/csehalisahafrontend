@@ -30,8 +30,8 @@ function Notifications() {
 
         try {
             const response = await sendBroadcastNotification(broadcastMessage, broadcastTitle, broadcastTarget, targetUsername);
-            // DEBUG: Backend'den gelen detaylı yanıtı göster
-            alert("Sonuç: " + (response.detail || "İşlem Tamam"));
+            // alert("Sonuç: " + (response.detail || "İşlem Tamam"));
+            success("Duyuru başarıyla gönderildi! 📢");
 
             setBroadcastMessage('');
             setBroadcastTitle('');
@@ -227,17 +227,17 @@ function Notifications() {
                 }}>
                     <h4 style={{ margin: '0 0 0.5rem 0', color: '#d63031', fontSize: '0.9rem' }}>⚠️ Bildirim Sorun Giderici</h4>
                     <p style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '0.5rem' }}>
-                        <b>Sürüm: v3.0 (RESET)</b> <br />
+                        <b>Sürüm: v4.0 (Stabil)</b> <br />
                         Aktif Anahtar: <b>{publicVapidKey ? `${publicVapidKey.substring(0, 6)}...${publicVapidKey.substring(publicVapidKey.length - 6)}` : 'YOK'}</b>
                     </p>
                     <button
                         onClick={async () => {
-                            if (window.confirm("Mevcut abonelik silinip tekrar alınacak. Emin misiniz?")) {
+                            if (window.confirm("Bildirim servisi yeniden başlatılacak. Devam edilsin mi?")) {
                                 try {
                                     await subscribeToPushNotifications(true); // check force=true
-                                    alert("Onarım Başarılı! ✅\nYeni abonelik sunucuya gönderildi.");
+                                    success("Onarım Başarılı! ✅\nYeni abonelik sunucuya gönderildi.");
                                 } catch (e) {
-                                    alert("Onarım Hatası: " + e.message);
+                                    showError("Onarım Hatası: " + e.message);
                                 }
                             }
                         }}

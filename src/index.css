@@ -60,6 +60,8 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  /* Ensure notch area matches theme */
 }
 
 body {

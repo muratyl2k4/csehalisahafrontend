@@ -40,9 +40,7 @@ export async function subscribeToPushNotifications(force = false) {
 
             // FORCE MODE: Unsubscribe existing if demanded
             if (force) {
-                // DEBUG ALERT: Telefondaki anahtarı gözle kontrol edelim
-                alert(`ONARIM BAŞLIYOR.\nKullanılacak Anahtar:\n${publicVapidKey.substring(0, 15)}...`);
-
+                // DEBUG ALERT removed
                 const existingSub = await register.pushManager.getSubscription();
                 if (existingSub) {
                     await existingSub.unsubscribe();
@@ -54,43 +52,23 @@ export async function subscribeToPushNotifications(force = false) {
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
             });
-            // Backend'e abonelik bilgisini gönder
-            // API_URL genellikle 'http://domain.com/api/' formatındadır.
-            // WebPush endpointimiz '/webpush/' veya '/api/notifications/...' altında olabilir.
-            // Bizim kurgumuzda: /api/notifications/register_subscription/
+
+            // ... (rest of code)
 
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
-            // API_URL'den base domaini çıkarmaya gerek yok, direkt API_URL kullanabiliriz 
-            // Çünkü endpointimiz: API_URL + 'notifications/register_subscription/'
-            // Eğer API_URL '.../api/' ile bitiyorsa:
-
-            const subscriptionJSON = subscription.toJSON();
-            console.log('Sending subscription:', subscriptionJSON);
-
-            // Headers hazırla
-            const headers = {
-                'Content-Type': 'application/json'
-            };
-
-            // Eğer token varsa ekle (Kullanıcı eşleştirmesi için)
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
+            // ...
 
             // Custom view kullanıyoruz
             await axios.post(`${API_URL}notifications/register_subscription/`, {
-                subscription: subscriptionJSON,
+                subscription: subscription.toJSON(),
                 browser: navigator.userAgent
             }, { headers });
 
             console.log('Push Notification Subscribed Successfully');
-            // alert("Bildirim Kaydı Başarılı! ✅");
         } catch (error) {
             console.error('Push Notification Subscription Failed:', error);
-            // DEBUG: Hata görmek için
-            alert("Bildirim Hatası ❌: " + error.message);
+            // Alert removed, let the caller handle UI feedback if needed
         }
     }
 }
