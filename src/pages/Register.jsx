@@ -22,6 +22,8 @@ const Register = () => {
         password: '',
         name: '',
         age: '',
+        jersey_number: '',
+        preferred_foot: 'right',
         position: 'ST',
         photo: null
     });
@@ -236,6 +238,45 @@ const Register = () => {
                     placeholder="20"
                 />
             </div>
+            <div className="form-group">
+                <label>Forma Numarası (1-99)</label>
+                <input
+                    type="number"
+                    name="jersey_number"
+                    className="form-input"
+                    value={formData.jersey_number}
+                    onChange={handleChange}
+                    placeholder="10"
+                    min="1"
+                    max="99"
+                />
+            </div>
+            <div className="form-group">
+                <label>Ayak Tercihi</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                    {[
+                        { id: 'right', label: 'Sağ' },
+                        { id: 'left', label: 'Sol' },
+                        { id: 'both', label: 'Her İkisi' }
+                    ].map(foot => (
+                        <button
+                            key={foot.id}
+                            className={`btn-secondary ${formData.preferred_foot === foot.id ? 'active' : ''}`}
+                            onClick={() => setFormData({ ...formData, preferred_foot: foot.id })}
+                            style={{
+                                padding: '0.5rem',
+                                fontSize: '0.9rem',
+                                backgroundColor: formData.preferred_foot === foot.id ? 'var(--primary)' : 'var(--bg-secondary)',
+                                color: formData.preferred_foot === foot.id ? '#fff' : 'var(--text-primary)',
+                                border: formData.preferred_foot === foot.id ? 'none' : '1px solid var(--border-light)',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            {foot.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 
@@ -249,6 +290,7 @@ const Register = () => {
                         { id: 'STP', label: 'STP' },
                         { id: 'SLB', label: 'SLB' },
                         { id: 'SGB', label: 'SĞB' },
+                        { id: 'DOS', label: 'DOS' },
                         { id: 'MO', label: 'MO' },
                         { id: 'MOO', label: 'MOO' },
                         { id: 'SLK', label: 'SLK' },
@@ -356,7 +398,7 @@ const Register = () => {
                 )}
 
                 {step === 2 && (
-                    <button className="btn-primary" onClick={nextStep} disabled={!formData.name || !formData.age}>
+                    <button className="btn-primary" onClick={nextStep} disabled={!formData.name || !formData.age || !formData.jersey_number}>
                         İleri <ChevronRight size={16} />
                     </button>
                 )}

@@ -10,6 +10,7 @@ const POSITIONS = [
     { id: 'STP', label: 'STP' },
     { id: 'SLB', label: 'SLB' },
     { id: 'SGB', label: 'SĞB' },
+    { id: 'DOS', label: 'DOS' },
     { id: 'MO', label: 'MO' },
     { id: 'MOO', label: 'MOO' },
     { id: 'SLK', label: 'SLK' },
@@ -27,6 +28,8 @@ function ProfileEdit() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [position, setPosition] = useState('');
+    const [jerseyNumber, setJerseyNumber] = useState('');
+    const [preferredFoot, setPreferredFoot] = useState('right');
 
     useEffect(() => {
         loadUserData();
@@ -46,6 +49,8 @@ function ProfileEdit() {
             if (parsedUser.name) setName(parsedUser.name);
             if (parsedUser.email) setEmail(parsedUser.email);
             if (parsedUser.position) setPosition(parsedUser.position);
+            if (parsedUser.jersey_number) setJerseyNumber(parsedUser.jersey_number);
+            if (parsedUser.preferred_foot) setPreferredFoot(parsedUser.preferred_foot);
 
             // Fetch fresh data to get current name/position
             if (parsedUser.id) {
@@ -53,6 +58,8 @@ function ProfileEdit() {
                 if (playerData.name) setName(playerData.name);
                 if (playerData.email) setEmail(playerData.email);
                 if (playerData.position) setPosition(playerData.position);
+                if (playerData.jersey_number) setJerseyNumber(playerData.jersey_number);
+                if (playerData.preferred_foot) setPreferredFoot(playerData.preferred_foot);
             }
         } catch (err) {
             console.error(err);
@@ -74,7 +81,9 @@ function ProfileEdit() {
             const updateData = {
                 name: name,
                 email: email,
-                position: position
+                position: position,
+                jersey_number: jerseyNumber,
+                preferred_foot: preferredFoot
             };
 
             await updateProfile(updateData);
@@ -155,6 +164,55 @@ function ProfileEdit() {
                     <p style={helpTextStyle}>
                         E-posta adresinizi değiştirirseniz, yeni adresinize doğrulama kodu gönderilecektir.
                     </p>
+                </div>
+
+                {/* Jersey Number & Foot */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>
+                            Forma No
+                        </label>
+                        <input
+                            type="number"
+                            className="form-input"
+                            value={jerseyNumber}
+                            onChange={(e) => setJerseyNumber(e.target.value)}
+                            placeholder="10"
+                            min="1"
+                            max="99"
+                            style={{ fontSize: '1.1rem', padding: '1rem' }}
+                        />
+                    </div>
+                    <div style={sectionStyle}>
+                        <label style={labelStyle}>
+                            Ayak
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {[
+                                { id: 'right', label: 'Sağ' },
+                                { id: 'left', label: 'Sol' },
+                                { id: 'both', label: 'Her İkisi' }
+                            ].map(foot => (
+                                <button
+                                    type="button"
+                                    key={foot.id}
+                                    className={`btn-secondary ${preferredFoot === foot.id ? 'active' : ''}`}
+                                    onClick={() => setPreferredFoot(foot.id)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.5rem',
+                                        fontSize: '0.8rem',
+                                        backgroundColor: preferredFoot === foot.id ? 'var(--primary)' : 'var(--bg-secondary)',
+                                        color: preferredFoot === foot.id ? '#fff' : 'var(--text-primary)',
+                                        border: preferredFoot === foot.id ? 'none' : '1px solid var(--border-light)',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    {foot.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Position Selection */}

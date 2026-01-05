@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ShieldCheck, UserPlus, LogOut, ChevronRight, Settings, Camera } from 'lucide-react';
+import { User, ShieldCheck, UserPlus, LogOut, ChevronRight, Settings, Camera, Shirt } from 'lucide-react';
 import { getPlayer, logout, updateProfile } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import ImageEditorModal from '../components/ui/ImageEditorModal';
@@ -185,10 +185,21 @@ function Profile() {
                 <button
                     className="profile-menu-btn"
                     style={menuBtnStyle}
+                    onClick={() => navigate(`/players/${user.id}`)}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <User size={28} color="#ffffff" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))' }} />
+                        <span style={textStyle}>Profilim</span>
+                    </div>
+                    <ChevronRight size={20} color="var(--text-muted)" />
+                </button>
+                <button
+                    className="profile-menu-btn"
+                    style={menuBtnStyle}
                     onClick={() => navigate('/profile/edit')}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <Settings size={28} color="#3b82f6" style={{ filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.3))' }} />
+                        <Settings size={28} color="#ffffff" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))' }} />
                         <span style={textStyle}>Bilgilerimi Düzenle</span>
                     </div>
                     <ChevronRight size={20} color="var(--text-muted)" />
@@ -202,7 +213,7 @@ function Profile() {
                         onClick={() => navigate(`/teams/${user.current_team}`)}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <ShieldCheck size={28} color="#8b5cf6" style={{ filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))' }} />
+                            <Shirt size={28} color="#ffffff" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))' }} />
                             <span style={textStyle}>Takımım</span>
                         </div>
                         <ChevronRight size={20} color="var(--text-muted)" />

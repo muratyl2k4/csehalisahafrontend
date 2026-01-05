@@ -89,7 +89,16 @@ function FifaCard({ player, small = false }) {
 
                 {/* Logolar */}
                 <div className="logos">
-                    <img src="https://flagcdn.com/w40/tr.png" alt="Türkiye" className="logo-img" />
+                    <img
+                        src={
+                            player.current_team_logo
+                                ? (player.current_team_logo.startsWith('http') ? player.current_team_logo : `http://127.0.0.1:8000${player.current_team_logo}`) // Check if it needs full URL
+                                : "https://flagcdn.com/w40/tr.png"
+                        }
+                        alt={player.current_team_name || "Türkiye"}
+                        className="logo-img"
+                        onError={(e) => { e.target.src = "https://flagcdn.com/w40/tr.png"; }} // Fallback
+                    />
                 </div>
             </div>
         </div>
