@@ -406,6 +406,7 @@ function TeamDetail() {
                                         )}
                                         <div className="player-list-info">
                                             <span className="player-list-name">
+                                                {player.jersey_number && <span style={{ color: 'var(--text-muted)', marginRight: '6px', fontWeight: 600 }}>#{player.jersey_number}</span>}
                                                 {player.name}
                                                 {team.captain_id === player.id && <span style={{ color: 'var(--primary)', fontWeight: 'bold', marginLeft: '5px' }}>(C)</span>}
                                             </span>

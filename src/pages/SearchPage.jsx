@@ -1,9 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Search, Trophy, Users, PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Trophy, Users, PlusCircle, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import { getTeams, getPlayers, refreshUserInfo, isAuthenticated } from '../services/api';
 import '../styles/main.css';
 import '../styles/player-table.css';
+
+const POSITIONS = [
+    { id: 'KL', label: 'KL' },
+    { id: 'STP', label: 'STP' },
+    { id: 'SLB', label: 'SLB' },
+    { id: 'SGB', label: 'SĞB' },
+    { id: 'DOS', label: 'DOS' },
+    { id: 'MO', label: 'MO' },
+    { id: 'MOO', label: 'MOO' },
+    { id: 'SLK', label: 'SLK' },
+    { id: 'SGK', label: 'SĞK' },
+    { id: 'ST', label: 'ST' },
+];
 
 function SearchPage() {
     const navigate = useNavigate();
@@ -14,6 +27,8 @@ function SearchPage() {
     const [activeTab, setActiveTab] = useState(initialTab); // 'teams' or 'players'
     const [searchTerm, setSearchTerm] = useState(''); // Input value
     const [query, setQuery] = useState(''); // Actual search query for API
+    const [selectedPosition, setSelectedPosition] = useState('');
+    const [showFilter, setShowFilter] = useState(false);
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(initialPage);
@@ -39,6 +54,9 @@ function SearchPage() {
         const tab = searchParams.get('tab');
         const page = parseInt(searchParams.get('page')) || 1;
         const q = searchParams.get('search') || '';
+        const pos = searchParams.get('position') || '';
+
+        if (pos !== selectedPosition) setSelectedPosition(pos);
 
         if (tab && (tab === 'teams' || tab === 'players')) {
             setActiveTab(tab);
@@ -58,15 +76,27 @@ function SearchPage() {
     // Fetch data when page or QUERY changes
     useEffect(() => {
         if (activeTab === 'players') {
-            loadPlayers(currentPage, query);
+            loadPlayers(currentPage, query, selectedPosition);
         } else {
             // If switching to teams, we might want to refresh team list if needed, 
             // but usually initial load is enough unless we implementing search/pagination for teams too.
             // For now, teams are loaded once. Search is client-side for teams as requested "Takımları değiştirme".
         }
-    }, [currentPage, activeTab, query]);
+    }, [currentPage, activeTab, query, selectedPosition]);
 
     // DEBOUNCE REMOVED - Manual Search Only
+
+    const handleFilterSelect = (pos) => {
+        setSelectedPosition(pos);
+        setShowFilter(false);
+        setCurrentPage(1);
+
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('page', 1);
+        if (pos) newParams.set('position', pos);
+        else newParams.delete('position');
+        setSearchParams(newParams);
+    };
 
     const handleSearch = () => {
         setQuery(searchTerm);
@@ -103,10 +133,11 @@ function SearchPage() {
         }
     };
 
-    const loadPlayers = async (page, search) => {
+    const loadPlayers = async (page, search, pos) => {
         try {
             const params = { page };
             if (search) params.search = search;
+            if (pos) params.position = pos;
 
             const data = await getPlayers(params);
             const results = data.results || [];
@@ -200,6 +231,7 @@ function SearchPage() {
             {/* 1. Search Bar */}
             <div style={{ position: 'relative', marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
                 <div style={{ position: 'relative', flex: 1 }}>
+                    <Search className="search-icon" size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input
                         type="text"
                         placeholder={activeTab === 'teams' ? "Takım ara..." : "Oyuncu ara..."}
@@ -208,7 +240,7 @@ function SearchPage() {
                         onKeyDown={handleKeyDown}
                         style={{
                             width: '100%',
-                            padding: '1rem 1rem 1rem 3rem',
+                            padding: '1rem 3.5rem 1rem 3rem', // Increased right padding for filter icon
                             fontSize: '1rem',
                             borderRadius: 'var(--radius-lg)',
                             border: '1px solid var(--border-light)',
@@ -218,8 +250,94 @@ function SearchPage() {
                             transition: 'border-color 0.2s',
                         }}
                     />
-                    <Search className="search-icon" size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+
+                    {/* Filter Icon inside Input */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            right: '0.5rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <button
+                            onClick={() => setShowFilter(!showFilter)}
+                            style={{
+                                background: selectedPosition ? 'var(--primary)' : 'transparent',
+                                color: selectedPosition ? '#fff' : 'var(--text-muted)',
+                                border: 'none',
+                                borderRadius: '50%', // Circle shape
+                                width: '32px',
+                                height: '32px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                            title="Filtrele"
+                        >
+                            <Filter size={18} />
+                        </button>
+                    </div>
+
+                    {/* Filter Dropdown (Absolute to Input Wrapper) */}
+                    {showFilter && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '110%',
+                            right: 0,
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border-light)',
+                            borderRadius: 'var(--radius-md)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            zIndex: 50,
+                            minWidth: '200px',
+                            padding: '0.5rem',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '0.5rem'
+                        }}>
+                            <button
+                                onClick={() => handleFilterSelect('')}
+                                style={{
+                                    gridColumn: '1 / -1',
+                                    padding: '0.5rem',
+                                    textAlign: 'center',
+                                    background: 'var(--bg-secondary)',
+                                    border: 'none',
+                                    borderRadius: 'var(--radius-sm)',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                Tümünü Göster
+                            </button>
+                            {POSITIONS.map(pos => (
+                                <button
+                                    key={pos.id}
+                                    onClick={() => handleFilterSelect(pos.id)}
+                                    style={{
+                                        padding: '0.5rem',
+                                        textAlign: 'center',
+                                        background: selectedPosition === pos.id ? 'var(--primary)' : 'transparent',
+                                        color: selectedPosition === pos.id ? '#fff' : 'var(--text-primary)',
+                                        border: '1px solid var(--border-light)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    {pos.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
+
                 <button
                     onClick={handleSearch}
                     className="btn-primary"

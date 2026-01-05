@@ -99,8 +99,24 @@ function PlayerDetail() {
                                     )}
                                 </span>
                                 <span className="hide-mobile">•</span>
+
+                                {player.jersey_number && (
+                                    <>
+                                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>#{player.jersey_number}</span>
+                                        <span className="hide-mobile">•</span>
+                                    </>
+                                )}
+
                                 <span>{player.position}</span>
                                 <span className="hide-mobile">•</span>
+
+                                {player.preferred_foot && (
+                                    <>
+                                        <span>{player.preferred_foot === 'left' ? 'Sol Ayak' : player.preferred_foot === 'right' ? 'Sağ Ayak' : 'Çift Ayak'}</span>
+                                        <span className="hide-mobile">•</span>
+                                    </>
+                                )}
+
                                 <span>{player.age} Yaş</span>
                             </div>
                         </div>
