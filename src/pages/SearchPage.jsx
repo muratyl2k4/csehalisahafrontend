@@ -25,9 +25,10 @@ function SearchPage() {
     const initialPage = parseInt(searchParams.get('page')) || 1;
 
     const [activeTab, setActiveTab] = useState(initialTab); // 'teams' or 'players'
-    const [searchTerm, setSearchTerm] = useState(''); // Input value
-    const [query, setQuery] = useState(''); // Actual search query for API
-    const [selectedPosition, setSelectedPosition] = useState('');
+    const initialSearch = searchParams.get('search') || '';
+    const [searchTerm, setSearchTerm] = useState(initialSearch); // Input value
+    const [query, setQuery] = useState(initialSearch); // Actual search query for API
+    const [selectedPosition, setSelectedPosition] = useState(searchParams.get('position') || '');
     const [showFilter, setShowFilter] = useState(false);
 
     // Pagination State
@@ -251,89 +252,91 @@ function SearchPage() {
                         }}
                     />
 
-                    {/* Filter Icon inside Input */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            right: '0.5rem',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <button
-                            onClick={() => setShowFilter(!showFilter)}
+                    {/* Filter Icon inside Input (Only for Players) */}
+                    {activeTab === 'players' && (
+                        <div
                             style={{
-                                background: selectedPosition ? 'var(--primary)' : 'transparent',
-                                color: selectedPosition ? '#fff' : 'var(--text-muted)',
-                                border: 'none',
-                                borderRadius: '50%', // Circle shape
-                                width: '32px',
-                                height: '32px',
+                                position: 'absolute',
+                                right: '0.5rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                alignItems: 'center'
                             }}
-                            title="Filtrele"
                         >
-                            <Filter size={18} />
-                        </button>
-                    </div>
-
-                    {/* Filter Dropdown (Absolute to Input Wrapper) */}
-                    {showFilter && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '110%',
-                            right: 0,
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--border-light)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                            zIndex: 50,
-                            minWidth: '200px',
-                            padding: '0.5rem',
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '0.5rem'
-                        }}>
                             <button
-                                onClick={() => handleFilterSelect('')}
+                                onClick={() => setShowFilter(!showFilter)}
                                 style={{
-                                    gridColumn: '1 / -1',
-                                    padding: '0.5rem',
-                                    textAlign: 'center',
-                                    background: 'var(--bg-secondary)',
+                                    background: selectedPosition ? 'var(--primary)' : 'transparent',
+                                    color: selectedPosition ? '#fff' : 'var(--text-muted)',
                                     border: 'none',
-                                    borderRadius: 'var(--radius-sm)',
+                                    borderRadius: '50%', // Circle shape
+                                    width: '32px',
+                                    height: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     cursor: 'pointer',
-                                    color: 'var(--text-primary)',
-                                    fontSize: '0.85rem'
+                                    transition: 'all 0.2s'
                                 }}
+                                title="Filtrele"
                             >
-                                Tümünü Göster
+                                <Filter size={18} />
                             </button>
-                            {POSITIONS.map(pos => (
-                                <button
-                                    key={pos.id}
-                                    onClick={() => handleFilterSelect(pos.id)}
-                                    style={{
-                                        padding: '0.5rem',
-                                        textAlign: 'center',
-                                        background: selectedPosition === pos.id ? 'var(--primary)' : 'transparent',
-                                        color: selectedPosition === pos.id ? '#fff' : 'var(--text-primary)',
-                                        border: '1px solid var(--border-light)',
-                                        borderRadius: 'var(--radius-sm)',
-                                        cursor: 'pointer',
-                                        fontSize: '0.85rem'
-                                    }}
-                                >
-                                    {pos.label}
-                                </button>
-                            ))}
+
+                            {/* Filter Dropdown (Absolute to Input Wrapper) */}
+                            {showFilter && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '110%',
+                                    right: 0,
+                                    background: 'var(--bg-card)',
+                                    border: '1px solid var(--border-light)',
+                                    borderRadius: 'var(--radius-md)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                                    zIndex: 50,
+                                    minWidth: '200px',
+                                    padding: '0.5rem',
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '0.5rem'
+                                }}>
+                                    <button
+                                        onClick={() => handleFilterSelect('')}
+                                        style={{
+                                            gridColumn: '1 / -1',
+                                            padding: '0.5rem',
+                                            textAlign: 'center',
+                                            background: 'var(--bg-secondary)',
+                                            border: 'none',
+                                            borderRadius: 'var(--radius-sm)',
+                                            cursor: 'pointer',
+                                            color: 'var(--text-primary)',
+                                            fontSize: '0.85rem'
+                                        }}
+                                    >
+                                        Tümünü Göster
+                                    </button>
+                                    {POSITIONS.map(pos => (
+                                        <button
+                                            key={pos.id}
+                                            onClick={() => handleFilterSelect(pos.id)}
+                                            style={{
+                                                padding: '0.5rem',
+                                                textAlign: 'center',
+                                                background: selectedPosition === pos.id ? 'var(--primary)' : 'transparent',
+                                                color: selectedPosition === pos.id ? '#fff' : 'var(--text-primary)',
+                                                border: '1px solid var(--border-light)',
+                                                borderRadius: 'var(--radius-sm)',
+                                                cursor: 'pointer',
+                                                fontSize: '0.85rem'
+                                            }}
+                                        >
+                                            {pos.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
