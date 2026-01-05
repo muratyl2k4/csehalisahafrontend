@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut, Search, Bell } from 'lucide-react';
+import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut, Search, Bell, Moon, Shirt } from 'lucide-react';
 import { isAuthenticated, logout, getUnreadNotificationCount } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import './Navbar.css';
 
 function Navbar() {
+    const { theme, toggleTheme } = useTheme();
+
+    // Debugging Theme
+    console.log("Current Theme:", theme);
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [loggedIn, setLoggedIn] = useState(isAuthenticated());
     const [unreadCount, setUnreadCount] = useState(0);
@@ -78,6 +84,37 @@ function Navbar() {
                             )}
                         </Link>
                     )}
+
+                    {/* Theme Toggle */}
+                    {/* Theme Switch */}
+                    <div
+                        onClick={toggleTheme}
+                        style={{
+                            width: '42px',
+                            height: '22px',
+                            background: theme === 'pitch' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(30, 41, 59, 0.6)',
+                            borderRadius: '99px',
+                            border: theme === 'pitch' ? '1px solid #10b981' : '1px solid #475569',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'all 0.3s ease',
+                            marginRight: '0.5rem'
+                        }}
+                        title="Tema Değiştir"
+                    >
+                        <div style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            background: theme === 'pitch' ? '#10b981' : '#94a3b8',
+                            position: 'absolute',
+                            left: theme === 'pitch' ? '22px' : '3px',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                        }} />
+                    </div>
 
                     <button
                         className={`hamburger ${isMenuOpen ? 'active' : ''}`}

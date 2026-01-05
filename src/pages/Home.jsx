@@ -58,54 +58,24 @@ function Home() {
             <p className="subtitle">Akdeniz Üniversitesi Öğrencileri İçin Halı Saha Lig Simülasyonu</p>
 
             {/* Total Stats Section - Squares (Relocated & Styled) */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '3rem',
-                maxWidth: '300px', /* Smaller container */
-                margin: '2rem auto 3rem auto'
-            }}>
-                <div style={{
-                    background: 'var(--bg-card)',
-                    border: '2px solid rgba(251, 191, 36, 0.3)', /* Gold border */
-                    boxShadow: '0 0 15px rgba(251, 191, 36, 0.1)',
-                    borderRadius: 'var(--radius-xl)',
-                    padding: '1rem',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    aspectRatio: '1'
-                }}>
-                    <Trophy size={28} style={{ color: '#fbbf24', marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: '#fbbf24' }}>
+            {/* Total Stats Section */}
+            <div className="home-stats-grid">
+                <div className="stat-card copper-glow">
+                    <Trophy size={28} className="stat-icon-gold" />
+                    <span className="stat-value gold-text">
                         {loading ? '-' : totalStats.teams}
                     </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
+                    <span className="stat-label">
                         TAKIM
                     </span>
                 </div>
 
-                <div style={{
-                    background: 'var(--bg-card)',
-                    border: '2px solid rgba(129, 140, 248, 0.3)', /* Indigo border */
-                    boxShadow: '0 0 15px rgba(129, 140, 248, 0.1)',
-                    borderRadius: 'var(--radius-xl)',
-                    padding: '1rem',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    aspectRatio: '1'
-                }}>
-                    <Users size={28} style={{ color: '#818cf8', marginBottom: '0.5rem' }} />
-                    <span style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: '#818cf8' }}>
+                <div className="stat-card copper-glow">
+                    <Users size={28} className="stat-icon-copper" />
+                    <span className="stat-value copper-text">
                         {loading ? '-' : totalStats.players}
                     </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
+                    <span className="stat-label">
                         OYUNCU
                     </span>
                 </div>
@@ -149,8 +119,8 @@ function Home() {
                 {/* Top Players */}
                 <div className="widget">
                     <h2>
-                        <Users size={24} style={{ color: '#818cf8' }} />
-                        <span style={{ background: 'linear-gradient(to right, #818cf8, #4f46e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        <Users size={24} style={{ color: '#fbbf24' }} />
+                        <span style={{ background: 'linear-gradient(to right, #fbbf24, #d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                             Oyuncular
                         </span>
                     </h2>

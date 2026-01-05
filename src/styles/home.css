@@ -13,6 +13,150 @@
     text-align: center;
 }
 
+/* Stats Grid & Cards */
+/* Stats Grid & Cards */
+.home-stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+    width: 100%;
+    max-width: 300px !important;
+    margin: 2rem auto 3rem auto !important;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 1rem;
+    text-align: center;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    aspect-ratio: 1 / 1 !important;
+    width: 100% !important;
+    /* Force fill grid cell */
+    height: auto !important;
+    /* Let aspect ratio decide */
+    transition: all 0.3s ease;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Copper & Gold Palette */
+.stat-icon-gold {
+    color: #fbbf24;
+    margin-bottom: 0.5rem;
+}
+
+.stat-icon-copper {
+    color: #fdba74;
+    margin-bottom: 0.5rem;
+}
+
+/* Light Copper/Orange */
+
+.gold-text {
+    color: #fbbf24;
+}
+
+.copper-text {
+    color: #fdba74;
+}
+
+.gold-glow {
+    border: 2px solid rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.copper-glow {
+    border: 2px solid rgba(249, 115, 22, 0.4);
+    /* Orange-500 */
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+}
+
+/* ========== PITCH THEME OVERRIDES (GLASSMORPHISM) ========== */
+html[data-theme='pitch'] .widget,
+html[data-theme='pitch'] .dashboard-card,
+html[data-theme='pitch'] .stat-card {
+    background: rgba(120, 53, 15, 0.15);
+    /* Very subtle warm tint */
+    background: linear-gradient(145deg, rgba(6, 78, 59, 0.9), rgba(2, 44, 34, 0.95));
+    /* Darker Green base */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(251, 191, 36, 0.15);
+    /* Gold tint border */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #fff;
+}
+
+html[data-theme='pitch'] .stat-card.gold-glow {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(0, 0, 0, 0.6));
+    border-color: #fbbf24;
+}
+
+html[data-theme='pitch'] .stat-card.copper-glow {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(0, 0, 0, 0.6));
+    border-color: #f97316;
+}
+
+/* Remove Blue Link Hover */
+html[data-theme='pitch'] a:hover {
+    color: #fbbf24;
+    /* Gold hover */
+}
+
+html[data-theme='pitch'] .dashboard-card:hover {
+    border-color: #f97316;
+    /* Copper hover */
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(249, 115, 22, 0.2);
+}
+
+/* ========== PITCH THEME OVERRIDES (GLASSMORPHISM) ========== */
+html[data-theme='pitch'] .widget,
+html[data-theme='pitch'] .dashboard-card,
+html[data-theme='pitch'] .stat-card {
+    background: rgba(6, 78, 59, 0.85);
+    /* Deep Emerald Glass */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme='pitch'] .stat-card.gold-glow {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+    /* Darker for high contrast */
+}
+
+html[data-theme='pitch'] .stat-card.indigo-glow {
+    border-color: rgba(129, 140, 248, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme='pitch'] .dashboard-card:hover {
+    background: rgba(6, 78, 59, 0.95);
+    border-color: var(--primary);
+    transform: translateY(-5px);
+}
+
 /* Widgets Section */
 .hover-link {
     cursor: pointer;

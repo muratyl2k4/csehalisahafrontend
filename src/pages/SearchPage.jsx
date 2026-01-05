@@ -421,28 +421,40 @@ function SearchPage() {
                                         <ChevronLeft size={20} />
                                     </button>
 
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <button
-                                            key={i + 1}
-                                            onClick={() => paginate(i + 1)}
-                                            style={{
-                                                background: currentPage === i + 1 ? 'var(--primary)' : 'var(--bg-card)',
-                                                border: currentPage === i + 1 ? 'none' : '1px solid var(--border-light)',
-                                                color: currentPage === i + 1 ? '#fff' : 'var(--text-primary)',
-                                                borderRadius: '8px',
-                                                width: '36px',
-                                                height: '36px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'pointer',
-                                                fontWeight: 600,
-                                                fontSize: '0.9rem'
-                                            }}
-                                        >
-                                            {i + 1}
-                                        </button>
-                                    ))}
+                                    {(() => {
+                                        let pages = [];
+                                        if (totalPages <= 3) {
+                                            pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+                                        } else {
+                                            let start = currentPage - 1;
+                                            if (start < 1) start = 1;
+                                            if (start + 2 > totalPages) start = totalPages - 2;
+                                            pages = [start, start + 1, start + 2];
+                                        }
+
+                                        return pages.map(pageNum => (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => paginate(pageNum)}
+                                                style={{
+                                                    background: currentPage === pageNum ? 'var(--primary)' : 'var(--bg-card)',
+                                                    border: currentPage === pageNum ? 'none' : '1px solid var(--border-light)',
+                                                    color: currentPage === pageNum ? '#fff' : 'var(--text-primary)',
+                                                    borderRadius: '8px',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 800,
+                                                    fontSize: '0.9rem'
+                                                }}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        ));
+                                    })()}
 
                                     <button
                                         onClick={() => paginate(Math.min(totalPages, currentPage + 1))}

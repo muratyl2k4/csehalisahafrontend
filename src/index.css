@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ========== CSS VARIABLES - DARK THEME ========== */
+/* ========== CSS VARIABLES - DARK THEME (DEFAULT) ========== */
 :root {
   /* Colors */
   --primary: #818cf8;
@@ -49,6 +49,55 @@
   /* Container Width - Tek yerden değiştir */
   --container-width: 85%;
   --container-width-mobile: 95%;
+
+  /* Aliases for better compatibility */
+  --card-bg: var(--bg-card);
+  --border-color: var(--border-light);
+}
+
+/* ========== PROFESSIONAL FOOTBALL PITCH THEME ========== */
+html[data-theme='pitch'] {
+  /* Colors - Premium Gold/Emerald Palette */
+  --primary: #f59e0b;
+  /* Amber-500: Trophy Gold */
+  --primary-dark: #d97706;
+  /* Amber-600 */
+  --secondary: #10b981;
+  /* Emerald-500: Vibrant Turf */
+  --accent: #84cc16;
+  /* Lime-500: Highlight */
+  --warning: #fbbf24;
+
+  /* Text - Crisp White on Dark Green */
+  --text-primary: #ecfdf5;
+  /* Emerald-50 */
+  --text-secondary: #a7f3d0;
+  /* Emerald-200 */
+  --text-muted: #6ee7b7;
+  /* Emerald-300 */
+
+  /* Background - Stadium Night Atmosphere */
+  --bg-primary: #022c22;
+  /* Emerald-950: Deepest Green */
+  --bg-secondary: #064e3b;
+  /* Emerald-900 */
+  --bg-card: #065f46;
+  /* Emerald-800 */
+  --bg-hover: #047857;
+  /* Emerald-700 */
+
+  /* Border - Subtle Chalk & Glass */
+  --border-light: rgba(255, 255, 255, 0.15);
+  --border-medium: rgba(255, 255, 255, 0.25);
+  --border-color: var(--border-light);
+
+  /* Gradients - Professional Spotlight */
+  --gradient-primary: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-bg: transparent;
+  /* Not used for main BG in this mode */
+
+  --shadow-glow: 0 0 40px rgba(245, 158, 11, 0.2);
+  --card-bg: var(--bg-card);
 }
 
 /* ========== RESET & BASE ========== */
@@ -71,11 +120,14 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Remove direct background to use pseudo-element */
   background: transparent;
 }
 
-/* Fixed Background Gradient (Mobile Optimized) */
+/* =========================================
+   BACKGROUND LOGIC
+   ========================================= */
+
+/* 1. Default Dark Mode Background (Gradient using pseudo-element) */
 body::before {
   content: "";
   position: fixed;
@@ -85,8 +137,32 @@ body::before {
   height: 100%;
   z-index: -1;
   background: var(--gradient-bg);
-  /* Fallback color if gradient fails */
-  background-color: var(--bg-primary);
+}
+
+/* 2. Pitch Mode: Disable the pseudo-element to prevent conflicts */
+/* 2. Pitch Mode: Use fixed pseudo-element for stable fixed background on mobile */
+html[data-theme='pitch'] body::before {
+  display: block !important;
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  /* Apply image here. Layer is fixed, so bg stays still */
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/1137.jpg') !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: scroll !important;
+  /* Important: Scroll here because the DIV itself is fixed */
+}
+
+/* 3. Pitch Mode: Remove background from body to avoid duplication */
+html[data-theme='pitch'] body {
+  background: transparent !important;
+  min-height: 100vh;
 }
 
 #root {
