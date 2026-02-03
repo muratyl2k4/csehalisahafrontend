@@ -7,6 +7,21 @@ const api = axios.create({
     timeout: 20000,
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+
+    failedQueue = [];
+};
+
 // Request Interceptor: Attach Token
 api.interceptors.request.use(
     (config) => {
@@ -16,20 +31,77 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        // Handle 401 Unauthorized errors globally
-        if (error.response && error.response.status === 401) {
-            // If checking auth status or public endpoint fails with 401, it means token is invalid.
-            // Clear storage to prevent infinite loop of 401s
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                console.warn("Session expired or invalid token. Logging out.");
+    (error) => Promise.reject(error)
+);
+
+// Response Interceptor: Handle 401 & Refresh
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+
+            if (isRefreshing) {
+                return new Promise(function (resolve, reject) {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            const refreshToken = localStorage.getItem('refresh_token');
+
+            if (!refreshToken) {
+                clearTokens();
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
+
+            try {
+                // Determine URL relative to baseURL or just use absolute path logic if needed
+                // Since api has baseURL, calls are relative.
+                // refresh endpoint: /auth/refresh/ (based on previous check)
+
+                // We create a fresh axios instance to avoid interceptor loop if refresh fails with 401
+                const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+                    refresh: refreshToken
+                });
+
+                if (response.status === 200) {
+                    const { access } = response.data;
+                    localStorage.setItem('access_token', access);
+
+                    // SimpleJWT refresh view might return new refresh token depending on settings 
+                    // (ROTATE_REFRESH_TOKENS). If so, update it.
+                    if (response.data.refresh) {
+                        localStorage.setItem('refresh_token', response.data.refresh);
+                    }
+
+                    api.defaults.headers.common['Authorization'] = 'Bearer ' + access;
+                    originalRequest.headers['Authorization'] = 'Bearer ' + access;
+
+                    processQueue(null, access);
+                    return api(originalRequest);
+                }
+            } catch (err) {
+                processQueue(err, null);
+                console.warn("Token refresh failed. Logging out.");
                 clearTokens();
                 localStorage.removeItem('user_info');
-                // Redirect to login page
                 window.location.href = '/login';
+                return Promise.reject(err);
+            } finally {
+                isRefreshing = false;
             }
         }
+
         return Promise.reject(error);
     }
 );
