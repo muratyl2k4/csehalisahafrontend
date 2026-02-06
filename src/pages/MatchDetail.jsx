@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getMatch } from '../services/api';
-import { Calendar, Trophy, ArrowLeft } from 'lucide-react';
+import { Calendar, Trophy, ArrowLeft, Hourglass } from 'lucide-react';
+import PlayerCard from '../components/PlayerCard';
 import '../styles/home.css';
 
 function MatchDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [match, setMatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -57,10 +59,27 @@ function MatchDetail() {
 
     return (
         <div className="container">
-            <Link to="/matches" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '2rem', fontWeight: 500 }}>
+            <button
+                onClick={() => navigate(-1)}
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'var(--text-muted)',
+                    textDecoration: 'none',
+                    marginBottom: '2rem',
+                    fontWeight: 500,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontFamily: 'inherit',
+                    fontSize: 'inherit'
+                }}
+            >
                 <ArrowLeft size={20} />
-                Tüm Maçlara Dön
-            </Link>
+                Geri Dön
+            </button>
 
             {/* Match Header */}
             <div className="team-detail-header" style={{ textAlign: 'center', alignItems: 'center' }}>
@@ -83,26 +102,16 @@ function MatchDetail() {
                     {/* Score */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                         <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1, letterSpacing: '-2px', textShadow: '0 0 30px rgba(99, 102, 241, 0.3)' }}>
-                            <span style={{ color: parseScore(match.team1_score) > parseScore(match.team2_score) ? 'var(--primary)' : 'white' }}>{match.team1_score}</span>
-                            <span style={{ color: 'var(--text-muted)', margin: '0 1rem' }}>-</span>
-                            <span style={{ color: parseScore(match.team2_score) > parseScore(match.team1_score) ? 'var(--primary)' : 'white' }}>{match.team2_score}</span>
+                            {match.is_finished ? (
+                                <>
+                                    <span style={{ color: parseScore(match.team1_score) > parseScore(match.team2_score) ? 'var(--primary)' : 'white' }}>{match.team1_score}</span>
+                                    <span style={{ color: 'var(--text-muted)', margin: '0 1rem' }}>-</span>
+                                    <span style={{ color: parseScore(match.team2_score) > parseScore(match.team1_score) ? 'var(--primary)' : 'white' }}>{match.team2_score}</span>
+                                </>
+                            ) : (
+                                <Hourglass size={48} className="text-muted" style={{ opacity: 0.5 }} />
+                            )}
                         </div>
-                        {!match.is_finished && (
-                            <div style={{
-                                padding: '0.25rem 0.75rem',
-                                background: 'rgba(251, 191, 36, 0.1)',
-                                border: '1px solid rgba(251, 191, 36, 0.2)',
-                                borderRadius: '20px',
-                                color: '#fbbf24',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
-                            }}>
-                                DEVAM EDİYOR
-                            </div>
-                        )}
                     </div>
 
                     {/* Team 2 */}
@@ -164,7 +173,14 @@ function MatchDetail() {
                     <div className="players-list-container">
                         {team1Players.length > 0 ? (
                             team1Players.map(player => (
-                                <PlayerStatItem key={player.id} player={player} />
+                                <PlayerCard
+                                    key={player.id}
+                                    player={player}
+                                    stats={[
+                                        player.goals > 0 ? { label: 'GOL', value: player.goals, color: '#4ade80' } : null,
+                                        player.assists > 0 ? { label: 'AST', value: player.assists, color: '#fbbf24' } : null
+                                    ].filter(Boolean)}
+                                />
                             ))
                         ) : (
                             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
@@ -183,7 +199,14 @@ function MatchDetail() {
                     <div className="players-list-container">
                         {team2Players.length > 0 ? (
                             team2Players.map(player => (
-                                <PlayerStatItem key={player.id} player={player} />
+                                <PlayerCard
+                                    key={player.id}
+                                    player={player}
+                                    stats={[
+                                        player.goals > 0 ? { label: 'GOL', value: player.goals, color: '#4ade80' } : null,
+                                        player.assists > 0 ? { label: 'AST', value: player.assists, color: '#fbbf24' } : null
+                                    ].filter(Boolean)}
+                                />
                             ))
                         ) : (
                             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
@@ -197,46 +220,7 @@ function MatchDetail() {
     );
 }
 
-// Helper component for player list item
-function PlayerStatItem({ player }) {
-    return (
-        <Link to={`/players/${player.player_id}`} className="player-list-item">
-            <div className="player-list-left">
-                {player.player_photo ? (
-                    <img src={player.player_photo} alt={player.player_name} className="player-list-photo" />
-                ) : (
-                    <div className="player-list-placeholder">
-                        <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>
-                            {player.player_name?.charAt(0)}
-                        </span>
-                    </div>
-                )}
-                <div className="player-list-info">
-                    <span className="player-list-name">{player.player_name}</span>
-                    <span className="player-list-pos" style={{ color: player.played ? '#4ade80' : 'var(--text-muted)' }}>
-
-                    </span>
-                </div>
-            </div>
-
-            <div className="player-list-stats">
-                {player.goals > 0 && (
-                    <div className="p-stat">
-                        <span className="p-stat-value" style={{ color: '#4ade80' }}>{player.goals}</span>
-                        <span className="p-stat-label">GOL</span>
-                    </div>
-                )}
-                {player.assists > 0 && (
-                    <div className="p-stat">
-                        <span className="p-stat-value" style={{ color: '#fbbf24' }}>{player.assists}</span>
-                        <span className="p-stat-label">AST</span>
-                    </div>
-                )}
-            </div>
-        </Link>
-    );
-}
-
+// Helper function to parse score
 function parseScore(score) {
     return parseInt(score) || 0;
 }

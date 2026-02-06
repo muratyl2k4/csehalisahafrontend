@@ -74,7 +74,9 @@ function PlayerDetail() {
                     <div className="player-profile-info">
                         <div style={{ position: 'relative' }}>
                             {player.photo ? (
-                                <img src={player.photo} alt={player.name} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary)' }} />
+                                <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: '3px solid var(--primary)', overflow: 'hidden', position: 'relative' }}>
+                                    <img src={player.photo} alt={player.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+                                </div>
                             ) : (
                                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid var(--border-light)' }}>
                                     <User size={40} color="var(--text-muted)" />

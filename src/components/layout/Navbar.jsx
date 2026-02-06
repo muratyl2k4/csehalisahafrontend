@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut, Search, Bell, Moon, Shirt } from 'lucide-react';
+import { Home, Users, Trophy, Swords, BarChart3, Menu, X, User, LogIn, LogOut, Search, Bell, Moon, Shirt, Newspaper } from 'lucide-react';
 import { isAuthenticated, logout, getUnreadNotificationCount } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import './Navbar.css';
@@ -138,22 +138,22 @@ function Navbar() {
                     </li>
                     <li className="nav-item">
                         <Link
-                            to="/search"
-                            className={`nav-link ${isActive('/search') ? 'active' : ''}`}
+                            to="/league"
+                            className={`nav-link ${isActive('/league') ? 'active' : ''}`}
                             onClick={closeMenu}
                         >
-                            <Search size={20} />
-                            <span>Ara</span>
+                            <Trophy size={20} />
+                            <span>Lig</span>
                         </Link>
                     </li>
                     <li className="nav-item">
                         <Link
-                            to="/matches"
-                            className={`nav-link ${isActive('/matches') ? 'active' : ''}`}
+                            to="/news"
+                            className={`nav-link ${isActive('/news') ? 'active' : ''}`}
                             onClick={closeMenu}
                         >
-                            <Swords size={20} />
-                            <span>Maçlar</span>
+                            <Newspaper size={20} />
+                            <span>Haberler</span>
                         </Link>
                     </li>
                     <li className="nav-item">

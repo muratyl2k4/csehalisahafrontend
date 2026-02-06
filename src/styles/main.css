@@ -318,7 +318,9 @@
 @media (max-width: 768px) {
 
     /* Navbar is fixed (70px height), so we need to push content down */
-    .container {}
+    .container {
+        padding-bottom: 100px;
+    }
 
     .grid {
         grid-template-columns: 1fr;

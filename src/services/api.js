@@ -171,8 +171,15 @@ const handleResponse = (response) => {
 };
 
 // Teams
-export const getTeams = async () => {
-    const response = await api.get('/teams/');
+export const getTeams = async (params = {}) => {
+    const { page } = params;
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/teams/${queryString ? `?${queryString}` : ''}`);
+
+    // Check if it's a paginated response AND page was requested
+    if (page || response.data.results) {
+        return response.data;
+    }
     return handleResponse(response);
 };
 
@@ -282,10 +289,36 @@ export const getAssistLeaderboard = async () => {
 };
 
 // Matches
-export const getMatches = async () => {
-    const response = await api.get('/matches/');
+export const getMatches = async (params = {}) => {
+    // params allow filtering by week, league, etc.
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/matches/${queryString ? `?${queryString}` : ''}`);
     return handleResponse(response);
 };
+
+// Leagues
+export const getLeagues = async () => {
+    const response = await api.get('/leagues/');
+    return handleResponse(response);
+};
+
+export const getWeeks = async (leagueId) => {
+    const response = await api.get(`/leagues/weeks/?league=${leagueId}`);
+    return handleResponse(response);
+};
+
+export const getStandings = async (params) => {
+    let queryString = '';
+    if (typeof params === 'object') {
+        queryString = new URLSearchParams(params).toString();
+    } else {
+        queryString = `league=${params}`;
+    }
+    const response = await api.get(`/leagues/standings/?${queryString}`);
+    return handleResponse(response);
+};
+
+
 
 export const getMatch = async (id) => {
     const response = await api.get(`/matches/${id}/`);

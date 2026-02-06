@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Users, Calendar, Trophy, ArrowLeft, TrendingUp, UserPlus, Check, X, Shield, Camera, Edit2 } from 'lucide-react';
-import { getTeam, joinTeam, respondToRequest, leaveTeam, updateTeam } from '../services/api';
+import { Users, Calendar, Trophy, ArrowLeft, TrendingUp, UserPlus, Check, X, Shield, Camera, Edit2, ChevronDown } from 'lucide-react';
+import { getTeam, joinTeam, respondToRequest, leaveTeam, updateTeam, getStandings } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/ui/Modal';
 import ImageEditorModal from '../components/ui/ImageEditorModal'; // Import Image Editor
+import MatchCard from '../components/MatchCard';
+import PlayerCard from '../components/PlayerCard';
 import '../styles/home.css';
 
 function TeamDetail() {
@@ -15,7 +17,10 @@ function TeamDetail() {
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState(null);
     const [joinLoading, setJoinLoading] = useState(false);
-    // const [actionLoading, setActionLoading] = useState(null); // Unused
+
+    // Stats State
+    const [teamStandings, setTeamStandings] = useState([]);
+    const [selectedStanding, setSelectedStanding] = useState(null);
 
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -86,6 +91,19 @@ function TeamDetail() {
         try {
             const teamData = await getTeam(id);
             setTeam(teamData);
+
+            // Fetch Standings for this team
+            try {
+                const standingsData = await getStandings({ team: id });
+                if (standingsData && standingsData.length > 0) {
+                    setTeamStandings(standingsData);
+                    // Select the latest one (assuming ID desc or explicitly sorted)
+                    setSelectedStanding(standingsData[0]);
+                }
+            } catch (sErr) {
+                console.warn("Could not load standings", sErr);
+            }
+
         } catch (err) {
             console.error('Error loading team details:', err);
             error('Takım bilgileri yüklenirken bir hata oluştu.');
@@ -182,6 +200,13 @@ function TeamDetail() {
         if (b.id === team.captain_id) return 1;
         return 0;
     });
+
+    // Stats values
+    const wins = selectedStanding ? selectedStanding.wins : 0;
+    const draws = selectedStanding ? selectedStanding.draws : 0;
+    const losses = selectedStanding ? selectedStanding.losses : 0;
+    const points = selectedStanding ? selectedStanding.points : 0;
+    const played = wins + draws + losses;
 
     return (
         <div className="container">
@@ -290,27 +315,61 @@ function TeamDetail() {
                 </div>
 
                 <div className="header-right-group">
-                    {/* ... (Existing stats and buttons) ... */}
+
+                    {/* League Selector */}
+                    {teamStandings.length > 0 && (
+                        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <select
+                                    value={selectedStanding ? selectedStanding.id : ''}
+                                    onChange={(e) => {
+                                        const found = teamStandings.find(s => s.id === parseInt(e.target.value));
+                                        if (found) setSelectedStanding(found);
+                                    }}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        padding: '0.4rem 2rem 0.4rem 0.8rem',
+                                        borderRadius: '6px',
+                                        appearance: 'none',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        minWidth: '140px'
+                                    }}
+                                >
+                                    {teamStandings.map(s => (
+                                        <option key={s.id} value={s.id} style={{ background: '#1a1a1a' }}>
+                                            {s.league_name || 'Lig ' + s.league}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }} />
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mini-stats-row">
                         <div className="mini-stat">
-                            <span className="ms-value text-default">{team.wins + team.draws + team.losses}</span>
+                            <span className="ms-value text-default">{played}</span>
                             <span className="ms-label">OM</span>
                         </div>
                         {/* ... keep stat blocks ... */}
                         <div className="mini-stat">
-                            <span className="ms-value text-success">{team.wins}</span>
+                            <span className="ms-value text-success">{wins}</span>
                             <span className="ms-label">G</span>
                         </div>
                         <div className="mini-stat">
-                            <span className="ms-value text-warning">{team.draws}</span>
+                            <span className="ms-value text-warning">{draws}</span>
                             <span className="ms-label">B</span>
                         </div>
                         <div className="mini-stat">
-                            <span className="ms-value text-danger">{team.losses}</span>
+                            <span className="ms-value text-danger">{losses}</span>
                             <span className="ms-label">M</span>
                         </div>
                         <div className="mini-stat p-highlight">
-                            <span className="ms-value">{team.wins * 3 + team.draws}</span>
+                            <span className="ms-value">{points}</span>
                             <span className="ms-label">P</span>
                         </div>
                     </div>
@@ -395,35 +454,15 @@ function TeamDetail() {
                     <div className="players-list-container">
                         {sortedPlayers.length > 0 ? (
                             sortedPlayers.map(player => (
-                                <Link to={`/players/${player.id}`} key={player.id} className="player-list-item">
-                                    <div className="player-list-left">
-                                        {player.photo ? (
-                                            <img src={player.photo} alt={player.name} className="player-list-photo" />
-                                        ) : (
-                                            <div className="player-list-placeholder">
-                                                <Users size={20} />
-                                            </div>
-                                        )}
-                                        <div className="player-list-info">
-                                            <span className="player-list-name">
-                                                {player.jersey_number && <span style={{ color: 'var(--text-muted)', marginRight: '6px', fontWeight: 600 }}>#{player.jersey_number}</span>}
-                                                {player.name}
-                                                {team.captain_id === player.id && <span style={{ color: 'var(--primary)', fontWeight: 'bold', marginLeft: '5px' }}>(C)</span>}
-                                            </span>
-                                            <span className="player-list-pos">{player.position}</span>
-                                        </div>
-                                    </div>
-                                    <div className="player-list-stats">
-                                        <div className="p-stat">
-                                            <span className="p-stat-value">{player.total_goals}</span>
-                                            <span className="p-stat-label">Gol</span>
-                                        </div>
-                                        <div className="p-stat">
-                                            <span className="p-stat-value">{player.total_assists}</span>
-                                            <span className="p-stat-label">Asist</span>
-                                        </div>
-                                    </div>
-                                </Link>
+                                <PlayerCard
+                                    key={player.id}
+                                    player={player}
+                                    isCaptain={team.captain_id === player.id}
+                                    stats={[
+                                        { label: 'Gol', value: player.total_goals },
+                                        { label: 'Asist', value: player.total_assists }
+                                    ]}
+                                />
                             ))
                         ) : (
                             <p className="no-data">Kadro bilgisi bulunmuyor.</p>
@@ -445,35 +484,14 @@ function TeamDetail() {
                     <div className="matches-list">
                         {team.recent_matches && team.recent_matches.length > 0 ? (
                             team.recent_matches.map(match => (
-                                <Link to={`/matches/${match.id}`} key={match.id} className="match-card">
-                                    <div className="match-card-header">
-                                        <span className="match-date-badge">
-                                            {new Date(match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                                        </span>
-                                    </div>
-                                    <div className="match-card-body">
-                                        <div className="match-team is-left">
-                                            <span className="team-name">{match.team1_short_name || match.team1_name}</span>
-                                            {match.team1_logo && <img src={match.team1_logo} alt={match.team1_name} className="mini-logo" />}
-                                        </div>
-                                        <div className="match-score-badge">
-                                            <span>{match.team1_score}</span>
-                                            <span className="sc-divider">-</span>
-                                            <span>{match.team2_score}</span>
-                                        </div>
-                                        <div className="match-team is-right">
-                                            {match.team2_logo && <img src={match.team2_logo} alt={match.team2_name} className="mini-logo" />}
-                                            <span className="team-name">{match.team2_short_name || match.team2_name}</span>
-                                        </div>
-                                    </div>
-                                </Link>
+                                <MatchCard key={match.id} match={match} />
                             ))
                         ) : (
                             <p className="no-data">Henüz maç oynanmamış.</p>
                         )}
                         {team.recent_matches && team.recent_matches.length > 0 && (
                             <Link to={`/matches?team=${team.id}`} className="view-all-btn">
-                                Tüm Maçları Gör
+                                Tümü
                             </Link>
                         )}
                     </div>

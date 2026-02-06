@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getMatches, getTeamMatches } from '../services/api';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import '../styles/main.css';
 import '../styles/home.css';
+import MatchCard from '../components/MatchCard';
 
 function Matches() {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const teamId = searchParams.get('team');
 
@@ -54,7 +57,25 @@ function Matches() {
 
     return (
         <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-light)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '12px',
+                        transition: 'all 0.2s ease'
+                    }}
+                    className="hover-scale"
+                >
+                    <ArrowLeft size={24} />
+                </button>
                 <h1 style={{ fontSize: '2rem', fontWeight: 800, background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
                     {teamId ? 'Takım Maçları' : 'Tüm Maçlar'}
                 </h1>
@@ -65,56 +86,9 @@ function Matches() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Henüz maç bulunmuyor.</p>
                 </div>
             ) : (
-                <div className="matches-grid-container">
+                <div className="matches-list-container" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {matches.map(match => (
-                        <Link
-                            to={`/matches/${match.id}`}
-                            key={match.id}
-                            className="match-card"
-                            style={{ height: 'auto', minHeight: '100px' }} // Auto height to fit content in grid
-                        >
-                            <div className="match-card-header">
-                                <span className="match-date-badge">
-                                    {new Date(match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                                </span>
-                            </div>
-
-                            <div className="match-card-body">
-                                {/* Home Team */}
-                                <div className="match-team is-left">
-                                    <span className="team-name">{match.team1_short_name || match.team1_name}</span>
-                                    {match.team1_logo ? (
-                                        <img src={match.team1_logo} alt={match.team1_name} className="mini-logo" />
-                                    ) : (
-                                        <div className="team-logo-placeholder" style={{ width: '36px', height: '36px', fontSize: '0.8rem' }}>
-                                            {match.team1_short_name?.[0] || 'A'}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Score */}
-                                <div className="match-score-badge">
-                                    <span style={{ color: match.is_finished ? 'white' : 'var(--text-muted)' }}>{match.team1_score}</span>
-                                    <span className="sc-divider">-</span>
-                                    <span style={{ color: match.is_finished ? 'white' : 'var(--text-muted)' }}>{match.team2_score}</span>
-                                    {!match.is_finished && (
-                                        <div style={{ position: 'absolute', top: '-15px', fontSize: '0.6rem', color: '#fbbf24', width: '100%', textAlign: 'center', fontWeight: 'bold' }}>CANLI</div>
-                                    )}
-                                </div>
-
-                                {/* Away Team */}
-                                <div className="match-team is-right">
-                                    {match.team2_logo ? (
-                                        <img src={match.team2_logo} alt={match.team2_name} className="mini-logo" />
-                                    ) : (
-                                        <div className="team-logo-placeholder" style={{ width: '36px', height: '36px', fontSize: '0.8rem' }}>
-                                            {match.team2_short_name?.[0] || 'B'}
-                                        </div>
-                                    )}
-                                    <span className="team-name">{match.team2_short_name || match.team2_name}</span>
-                                </div>
-                            </div>
-                        </Link>
+                        <MatchCard key={match.id} match={match} />
                     ))}
                 </div>
             )}

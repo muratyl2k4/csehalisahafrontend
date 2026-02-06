@@ -10,15 +10,39 @@ function Players() {
     const navigate = useNavigate();
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 5; // Backend page size
 
     useEffect(() => {
-        loadPlayers();
-    }, []);
+        const timeoutId = setTimeout(() => {
+            loadPlayers(currentPage, searchTerm);
+        }, 300); // 300ms debounce
+        return () => clearTimeout(timeoutId);
+    }, [currentPage, searchTerm]);
 
-    const loadPlayers = async () => {
+    const loadPlayers = async (page, search) => {
         try {
-            const data = await getPlayers();
-            setPlayers(data);
+            setLoading(true);
+            const data = await getPlayers({ page: page, search: search });
+
+            console.log("Players API Debug:", {
+                count: data.count,
+                itemsPerPage: itemsPerPage,
+                calculatedPages: Math.ceil((data.count || 0) / itemsPerPage)
+            });
+
+            if (data.results) {
+                setPlayers(data.results);
+                // Exact calculation based on total count from backend (e.g. 92 / 5 = 19 pages)
+                const calculatedTotal = Math.ceil((data.count || 0) / itemsPerPage);
+                setTotalPages(calculatedTotal > 0 ? calculatedTotal : 1);
+            } else if (Array.isArray(data)) {
+                // Fallback if backend returns all data as array
+                setPlayers(data);
+                setTotalPages(1);
+            }
+
             setLoading(false);
         } catch (err) {
             setError(err.message);
@@ -26,41 +50,28 @@ function Players() {
         }
     };
 
-    const filteredPlayers = players.filter(player =>
-        player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (player.current_team_name && player.current_team_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-    // Pagination Logic
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 15;
-
-    // Reset page when search changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredPlayers.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredPlayers.length / itemsPerPage);
-
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const getPageNumbers = () => {
-        // Robust logic to ensure exactly 3 buttons max
+        // Sliding window logic: Max 3 buttons
         if (totalPages <= 3) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);
         }
 
         let start = currentPage - 1;
+        // Adjust start if close to beginning
         if (start < 1) start = 1;
+        // Adjust start if close to end so we typically show 3 buttons
         if (start + 2 > totalPages) start = totalPages - 2;
 
-        return [start, start + 1, start + 2];
+        // Verify valid range to avoid negative numbers if totalPages is small (handled by first if)
+        // or edge cases
+        if (start < 1) start = 1;
+
+        return [start, start + 1, start + 2].filter(p => p <= totalPages);
     };
 
     if (loading) return (
@@ -90,7 +101,10 @@ function Players() {
                     type="text"
                     placeholder="Oyuncu ara..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1); // Reset to page 1 on search
+                    }}
                     style={{
                         width: '100%',
                         padding: '1rem 1.5rem',
@@ -105,14 +119,14 @@ function Players() {
                 />
             </div>
 
-            {filteredPlayers.length === 0 ? (
+            {players.length === 0 ? (
                 <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
                     <p style={{ color: 'var(--text-muted)' }}>Oyuncu bulunamadı.</p>
                 </div>
             ) : (
                 <>
-                    <div className="players-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '700px', margin: '0 auto' }}>
-                        {currentItems.map(player => (
+                    <div className="players-list" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '700px', margin: '0 auto' }}>
+                        {players.map(player => (
                             <div
                                 key={player.id}
                                 onClick={() => navigate(`/players/${player.id}`)}
@@ -121,13 +135,13 @@ function Players() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    background: 'var(--bg-card)', /* Slightly transparent on pitch theme via CSS override if needed, using card var for consistency */
+                                    background: 'var(--bg-card)',
                                     padding: '0.5rem 1rem',
                                     borderRadius: '12px',
                                     cursor: 'pointer',
                                     border: '1px solid var(--border-light)',
                                     transition: 'all 0.2s',
-                                    height: '60px' /* Fixed compact height */
+                                    height: '60px'
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

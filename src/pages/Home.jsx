@@ -21,20 +21,22 @@ function Home() {
     const loadData = async () => {
         try {
             // Load Top Lists AND Total Counts
-            // getTeams() returns all teams (array)
-            // getPlayers({page: 1}) returns { count: ... }
-            const [playersData, teamsData, allTeams, playersPage] = await Promise.all([
+            // getTeams({ page: 1 }) returns { count: ... }
+            const [playersData, teamsData, teamsPage, playersPage] = await Promise.all([
                 getTopPlayers(),
                 getTopTeams(),
-                getTeams(),
+                getTeams({ page: 1 }),
                 getPlayers({ page: 1 })
             ]);
+
+            console.log('Stats Debug - Teams:', teamsPage);
+            console.log('Stats Debug - Players:', playersPage);
 
             setTopPlayers(playersData);
             setTopTeams(teamsData);
             setTotalStats({
-                teams: allTeams.length || 0,
-                players: playersPage.count || 0
+                teams: Array.isArray(teamsPage) ? teamsPage.length : (teamsPage.count || 0),
+                players: Array.isArray(playersPage) ? playersPage.length : (playersPage.count || 0)
             });
 
             setLoading(false);

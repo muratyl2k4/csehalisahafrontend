@@ -11,7 +11,8 @@ import Matches from './pages/Matches';
 import MatchDetail from './pages/MatchDetail';
 
 import Leaderboard from './pages/Leaderboard';
-import SearchPage from './pages/SearchPage';
+import LeaguePage from './pages/LeaguePage';
+import NewsPage from './pages/NewsPage';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile'; // Import Profile
 import ProfileEdit from './pages/ProfileEdit';
@@ -107,18 +108,18 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/create-team" element={<CreateTeam />} />
-            <Route path="/search" element={<SearchPage />} />
             {/* Teams list route removed, redirected to search */}
             <Route path="/teams/:id" element={<TeamDetail />} />
             <Route path="/teams/:id/requests" element={<TeamRequests />} />
             {/* Players list route removed, redirected to search */}
+            <Route path="/league" element={<LeaguePage />} />
+            <Route path="/news" element={<NewsPage />} />
             <Route path="/players/:id" element={<PlayerDetail />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileEdit />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/matches/:id" element={<MatchDetail />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

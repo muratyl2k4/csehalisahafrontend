@@ -74,7 +74,7 @@ export async function subscribeToPushNotifications(force = false) {
 
             // ... (rest of code)
 
-            const API_URL = 'https://muratyl2k4.pythonanywhere.com/api/';
+            const API_URL = import.meta.env.VITE_API_URL + '/';
 
             // ...
 
