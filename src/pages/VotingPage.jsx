@@ -156,12 +156,7 @@ export default function VotingPage() {
         const attributes = getAttributes(selectedPlayer.position);
 
         return (
-            <div style={{
-                position: 'fixed', inset: 0,
-                backgroundColor: 'var(--bg-primary)', zIndex: 2000,
-                display: 'flex', flexDirection: 'column',
-                overflow: 'hidden' // No scroll
-            }}>
+            <div className="voting-overlay">
                 {/* Header / Actions */}
                 <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-light)' }}>
                     <button onClick={() => setViewMode('list')} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)' }}>
@@ -174,7 +169,7 @@ export default function VotingPage() {
                 </div>
 
                 {/* Main Content Split: Top (Card) - Bottom (Controls) */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', gap: '2rem' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '1rem', gap: '1.5rem', overflowY: 'auto' }}>
 
                     {/* 1. FIFA CARD (Static - No Preview) */}
                     <div style={{ transform: 'scale(1)' }}>

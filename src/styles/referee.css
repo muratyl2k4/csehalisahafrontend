@@ -12,10 +12,8 @@
     left: 0;
     z-index: 50;
     overflow: hidden;
-    padding-top: 85px;
-    /* Navbar Clearance */
-    padding-bottom: 80px;
-    /* Bottom Navbar Clearance */
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
 }
 
