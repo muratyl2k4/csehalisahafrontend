@@ -12,11 +12,10 @@
     left: 0;
     z-index: 50;
     overflow: hidden;
-    /* User logic: Safe padding is PRIORITY No.1 to avoid overlapping */
     padding-top: 85px;
     /* Navbar Clearance */
-    padding-bottom: 0;
-    /* Remove fixed bottom gap per user request */
+    padding-bottom: 80px;
+    /* Bottom Navbar Clearance */
     box-sizing: border-box;
 }
 
@@ -300,8 +299,7 @@
     width: 92%;
     /* Prevent sticking to edges */
     max-width: 600px;
-    padding-bottom: 160px;
-    /* Large spacer so last item scrolls clear of Bottom Bar */
+    padding-bottom: 2rem;
 }
 
 /* Special Cards in List */
