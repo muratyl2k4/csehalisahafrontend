@@ -206,7 +206,7 @@ function TeamDetail() {
     const draws = selectedStanding ? selectedStanding.draws : 0;
     const losses = selectedStanding ? selectedStanding.losses : 0;
     const points = selectedStanding ? selectedStanding.points : 0;
-    const played = wins + draws + losses;
+    const played = selectedStanding ? selectedStanding.played : 0;
 
     return (
         <div className="container">
