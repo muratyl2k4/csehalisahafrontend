@@ -13,7 +13,7 @@
     z-index: 50;
     overflow: hidden;
     padding-top: calc(70px + env(safe-area-inset-top, 0px));
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
     box-sizing: border-box;
 }
 
@@ -297,7 +297,7 @@
     width: 92%;
     /* Prevent sticking to edges */
     max-width: 600px;
-    padding-bottom: 2rem;
+    padding-bottom: 80px;
 }
 
 /* Special Cards in List */

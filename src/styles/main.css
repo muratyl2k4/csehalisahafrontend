@@ -617,5 +617,5 @@
     flex-direction: column;
     overflow: hidden;
     padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
 }

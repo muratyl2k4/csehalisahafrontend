@@ -169,7 +169,7 @@ export default function VotingPage() {
                 </div>
 
                 {/* Main Content Split: Top (Card) - Bottom (Controls) */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '1rem', gap: '1.5rem', overflowY: 'auto' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '1rem', paddingBottom: '80px', gap: '1.5rem', overflowY: 'auto' }}>
 
                     {/* 1. FIFA CARD (Static - No Preview) */}
                     <div style={{ transform: 'scale(1)' }}>
