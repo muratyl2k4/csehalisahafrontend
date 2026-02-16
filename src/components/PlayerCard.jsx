@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import '../styles/home.css';
 
-const PlayerCard = ({ player, isCaptain = false, stats = [] }) => {
+const PlayerCard = ({ player, isCaptain = false, stats = [], onClick, disableLink = false }) => {
     // Data Normalization
     const id = player.player_id || player.id;
     const rawName = player.name || player.player_name;
@@ -25,8 +25,8 @@ const PlayerCard = ({ player, isCaptain = false, stats = [] }) => {
 
     const name = formatName(rawName);
 
-    return (
-        <Link to={`/players/${id}`} className="player-list-item">
+    const content = (
+        <>
             <div className="player-list-left">
                 {photo ? (
                     <img src={photo} alt={name} className="player-list-photo" />
@@ -67,6 +67,28 @@ const PlayerCard = ({ player, isCaptain = false, stats = [] }) => {
                     )
                 ))}
             </div>
+        </>
+    );
+
+    if (onClick) {
+        return (
+            <div className="player-list-item" onClick={onClick} style={{ cursor: 'pointer' }}>
+                {content}
+            </div>
+        );
+    }
+
+    if (disableLink) {
+        return (
+            <div className="player-list-item">
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <Link to={`/players/${id}`} className="player-list-item">
+            {content}
         </Link>
     );
 };

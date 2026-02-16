@@ -24,12 +24,33 @@ const MatchCard = ({ match }) => {
             </div>
 
             <div className="match-center-col">
-                <span className="match-date-text">
+                {match.is_live && (
+                    <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        fontSize: '0.6rem', fontWeight: 800, color: '#ef4444',
+                        textTransform: 'uppercase', letterSpacing: '1px',
+                        position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)',
+                        zIndex: 2
+                    }}>
+                        <span style={{
+                            width: '6px', height: '6px', borderRadius: '50%',
+                            background: '#ef4444', animation: 'pulse-live 1.5s ease-in-out infinite'
+                        }} />
+                        CANLI
+                    </span>
+                )}
+                <span className="match-date-text" style={match.is_live ? { top: '-22px' } : {}}>
                     {new Date(match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <div className={`match-score-box ${!match.is_finished ? 'upcoming' : ''}`}>
-                    {match.is_finished ? `${match.team1_score} - ${match.team2_score}` : <Hourglass size={16} />}
-                </div>
+                {match.is_live ? (
+                    <div className="match-score-box live">
+                        {`${match.team1_score} - ${match.team2_score}`}
+                    </div>
+                ) : (
+                    <div className={`match-score-box ${!match.is_finished ? 'upcoming' : ''}`}>
+                        {match.is_finished ? `${match.team1_score} - ${match.team2_score}` : <Hourglass size={16} />}
+                    </div>
+                )}
             </div>
 
             <div className="match-team-col away-team">

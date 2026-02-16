@@ -9,6 +9,8 @@ import Players from './pages/Players';
 import PlayerDetail from './pages/PlayerDetail';
 import Matches from './pages/Matches';
 import MatchDetail from './pages/MatchDetail';
+import RefereePage from './pages/RefereePage';
+import VotingPage from './pages/VotingPage';
 
 import Leaderboard from './pages/Leaderboard';
 import LeaguePage from './pages/LeaguePage';
@@ -51,19 +53,9 @@ const VerificationEnforcer = ({ children }) => {
     // 2. Email Doğrulama Kontrolü
     if (token) {
       // Check if user is verified
-      // ... existing logic ...
-      // We assume user_info is updated upon login/refresh
       const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
 
-      // If we have verification status in userInfo (we generally should after login update)
-      // But if it's missing (old login), we might need to fetch or just let them pass until next refresh.
-      // Let's rely on 'is_email_verified' being present. 
-      // NOTE: The 'login' response now includes it, but we need to make sure 'user_info' stores it.
-      // We need to check if 'login' function in api.js stores it! (It currently does NOT store extra fields automatically)
-      // So we'll need to update api.js login function first to store keys.
 
-      // Wait, I updated the serializer but I might not have updated the front-end login function to SAVE that new field.
-      // I should check api.js login function.
 
       if (userInfo.is_email_verified === false) {
         if (location.pathname !== '/verify-email') {
@@ -120,6 +112,8 @@ function App() {
             <Route path="/profile/edit" element={<ProfileEdit />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/matches/:id" element={<MatchDetail />} />
+            <Route path="/matches/:id/vote" element={<VotingPage />} /> {/* Added route */}
+            <Route path="/matches/:id/manage" element={<RefereePage />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

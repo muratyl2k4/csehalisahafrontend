@@ -111,7 +111,7 @@ function Home() {
                                     </div>
                                 </Link>
                             ))}
-                            <Link to="/search?tab=teams" className="view-all-btn">
+                            <Link to="/league?tab=standings" className="view-all-btn">
                                 Tüm Takımlar
                             </Link>
                         </div>
@@ -154,7 +154,7 @@ function Home() {
 
                                 </Link>
                             ))}
-                            <Link to="/search?tab=players" className="view-all-btn">
+                            <Link to="/league?tab=players" className="view-all-btn">
                                 Tüm Oyuncular
                             </Link>
                         </div>
@@ -165,7 +165,7 @@ function Home() {
             {/* Dashboard Grid */}
             <h2 className="section-title">Hızlı Erişim</h2>
             <div className="dashboard-grid">
-                <Link to="/search?tab=teams" className="dashboard-card">
+                <Link to="/league?tab=standings" className="dashboard-card">
                     <div className="card-icon">
                         <Trophy size={48} />
                     </div>
@@ -173,7 +173,7 @@ function Home() {
                     <p>Takım istatistiklerini görüntüle</p>
                 </Link>
 
-                <Link to="/search?tab=players" className="dashboard-card">
+                <Link to="/league?tab=players" className="dashboard-card">
                     <div className="card-icon">
                         <Users size={48} />
                     </div>
@@ -181,11 +181,11 @@ function Home() {
                     <p>Oyuncu kartları ve istatistikler</p>
                 </Link>
 
-                <Link to="/matches" className="dashboard-card">
+                <Link to="/league?tab=matches" className="dashboard-card">
                     <div className="card-icon">
-                        <Swords size={48} />
+                        <Calendar size={48} />
                     </div>
-                    <h3>Maçlar</h3>
+                    <h3>Lig Fikstürü</h3>
                     <p>Maç sonuçları ve detayları</p>
                 </Link>
 

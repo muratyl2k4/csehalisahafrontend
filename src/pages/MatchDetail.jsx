@@ -1,32 +1,66 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getMatch } from '../services/api';
-import { Calendar, Trophy, ArrowLeft, Hourglass } from 'lucide-react';
+import { getMatch, ratePlayer, isAuthenticated } from '../services/api';
+import { Calendar, Trophy, ArrowLeft, Hourglass, Star, Shield } from 'lucide-react'; // Added Shield
 import PlayerCard from '../components/PlayerCard';
+import PlayerRatingModal from '../components/PlayerRatingModal';
+
+import { useToast } from '../context/ToastContext';
 import '../styles/home.css';
 
 function MatchDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { success, error: showError } = useToast();
     const [match, setMatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState('team1'); // Tabs for mobile
+    const [activeTab, setActiveTab] = useState('team1');
+
+    // Rating State
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [showRefereeInterface, setShowRefereeInterface] = useState(false); // Added State
+    const [currentUser, setCurrentUser] = useState(null);
+    const [ratedPlayerIds, setRatedPlayerIds] = useState([]);
 
     useEffect(() => {
+        const userInfo = localStorage.getItem('user_info');
+        if (userInfo) {
+            setCurrentUser(JSON.parse(userInfo));
+        }
         loadMatchDetail();
     }, [id]);
 
     const loadMatchDetail = async () => {
         try {
             const data = await getMatch(id);
-            console.log("Match Data:", data); // Debug log
             setMatch(data);
             setLoading(false);
         } catch (err) {
             console.error(err);
             setError('Maç detayları yüklenirken bir hata oluştu.');
             setLoading(false);
+        }
+    };
+
+    const handleRateSubmit = async (playerId, ratings, comment) => {
+        try {
+            await ratePlayer(id, {
+                rated_player: playerId,
+                ...ratings,
+                comment
+            });
+            success('Oyuncu başarıyla oylandı!');
+            setRatedPlayerIds(prev => [...prev, parseInt(playerId)]);
+        } catch (err) {
+            console.error(err);
+            if (err.response && err.response.data && err.response.data.detail) {
+                showError(err.response.data.detail);
+            } else if (err.response && err.response.data && err.response.data.non_field_errors) {
+                showError(err.response.data.non_field_errors[0]);
+            } else {
+                showError('Puanlama sırasında bir hata oluştu.');
+            }
         }
     };
 
@@ -43,7 +77,7 @@ function MatchDetail() {
         <div className="container">
             <div className="error-container" style={{ textAlign: 'center', padding: '3rem' }}>
                 <p style={{ color: '#ef4444', fontSize: '1.2rem' }}>{error}</p>
-                <Link to="/matches" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+                <Link to="/league?tab=matches" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
                     Maçlara Dön
                 </Link>
             </div>
@@ -57,32 +91,94 @@ function MatchDetail() {
     const team1Players = match.team1_players || [];
     const team2Players = match.team2_players || [];
 
+    // Determine eligibility for Rating
+    const isFinished = match.is_finished;
+
+    // Fix: Check against p.player_id (Player Profile ID) not p.id (Match Stats ID)
+    const userInTeam1 = currentUser && team1Players.some(p => p.player_id === currentUser.id);
+    const userInTeam2 = currentUser && team2Players.some(p => p.player_id === currentUser.id);
+
+    // Only players who played in the match can rate, and voting must still be open (3 hours after match end)
+    const canRate = isFinished && match.voting_open && (userInTeam1 || userInTeam2);
+
+    // Determine eligibility for Refereeing
+    const isReferee = currentUser && (match.referee === currentUser.id);
+    const isAdmin = currentUser && currentUser.is_staff;
+    const canManageMatch = (isReferee || isAdmin) && (!match.is_finished || isAdmin);
+
+    // Determine opponents for Rating Modal
+    let opponents = [];
+    if (userInTeam1) opponents = team2Players;
+    else if (userInTeam2) opponents = team1Players;
+
+    // Filter out self just in case, though strictly lists are separated
+    // Also filter out players user has just rated in this session
+    // (Ideally backend sends 'rated_players' list but for now session tracking)
+
     return (
         <div className="container">
-            <button
-                onClick={() => navigate(-1)}
-                style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    color: 'var(--text-muted)',
-                    textDecoration: 'none',
-                    marginBottom: '2rem',
-                    fontWeight: 500,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontFamily: 'inherit',
-                    fontSize: 'inherit'
-                }}
-            >
-                <ArrowLeft size={20} />
-                Geri Dön
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                        color: 'var(--text-muted)', background: 'none', border: 'none',
+                        cursor: 'pointer', fontSize: 'inherit'
+                    }}
+                >
+                    <ArrowLeft size={20} />
+                    Geri Dön
+                </button>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    {canManageMatch && (
+                        <button
+                            className="btn-primary"
+                            onClick={() => navigate(`/matches/${match.id}/manage`)} // Navigate to new page
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#f59e0b' }}
+                        >
+                            <Shield size={18} fill="currentColor" />
+                            Maçı Yönet
+                        </button>
+                    )}
+
+                    {canRate && (
+                        <button
+                            className="btn-primary"
+                            onClick={() => navigate(`/matches/${match.id}/vote`)}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+                        >
+                            <Star size={18} fill="currentColor" />
+                            Maçı Oyla
+                        </button>
+                    )}
+                </div>
+            </div>
+
+
 
             {/* Match Header */}
             <div className="team-detail-header" style={{ textAlign: 'center', alignItems: 'center' }}>
+                {/* Live Badge */}
+                {match.is_live && (
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        fontSize: '0.75rem', fontWeight: 800, color: '#ef4444',
+                        textTransform: 'uppercase', letterSpacing: '2px',
+                        marginBottom: '0.5rem',
+                        padding: '4px 12px',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: '999px'
+                    }}>
+                        <span style={{
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: '#ef4444', animation: 'pulse-live 1.5s ease-in-out infinite'
+                        }} />
+                        CANLI
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
                     <Calendar size={16} />
                     {new Date(match.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -101,8 +197,8 @@ function MatchDetail() {
 
                     {/* Score */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                        <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1, letterSpacing: '-2px', textShadow: '0 0 30px rgba(99, 102, 241, 0.3)' }}>
-                            {match.is_finished ? (
+                        <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1, letterSpacing: '-2px', textShadow: match.is_live ? '0 0 30px rgba(239, 68, 68, 0.3)' : '0 0 30px rgba(99, 102, 241, 0.3)' }}>
+                            {(match.is_finished || match.is_live) ? (
                                 <>
                                     <span style={{ color: parseScore(match.team1_score) > parseScore(match.team2_score) ? 'var(--primary)' : 'white' }}>{match.team1_score}</span>
                                     <span style={{ color: 'var(--text-muted)', margin: '0 1rem' }}>-</span>
@@ -216,6 +312,19 @@ function MatchDetail() {
                     </div>
                 </div>
             </div>
+
+            {/* Rating Modal */}
+            <PlayerRatingModal
+                isOpen={showRatingModal}
+                onClose={() => setShowRatingModal(false)}
+                opponents={opponents.map(p => ({
+                    player_id: p.id,
+                    player_name: p.name,
+                    player_photo: p.photo
+                }))}
+                alreadyRatedIds={ratedPlayerIds}
+                onSubmit={handleRateSubmit}
+            />
         </div>
     );
 }

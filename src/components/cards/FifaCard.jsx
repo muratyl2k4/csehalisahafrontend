@@ -25,7 +25,7 @@ function FifaCard({ player, small = false }) {
             <div className="bottom-info">
                 {/* Oyuncu İsmi */}
                 <div className="name-section">
-                    <h1>{player.name}</h1>
+                    <h1>{player.name || player.player_name}</h1>
                 </div>
 
                 {/* İstatistikler */}

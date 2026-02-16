@@ -296,6 +296,12 @@ export const getMatches = async (params = {}) => {
     return handleResponse(response);
 };
 
+// Rate Player
+export const ratePlayer = async (matchId, data) => {
+    const response = await api.post(`/matches/${matchId}/rate_player/`, data);
+    return handleResponse(response);
+};
+
 // Leagues
 export const getLeagues = async () => {
     const response = await api.get('/leagues/');
@@ -322,6 +328,27 @@ export const getStandings = async (params) => {
 
 export const getMatch = async (id) => {
     const response = await api.get(`/matches/${id}/`);
+    return response.data;
+};
+
+// Referee Actions
+export const recordGoal = async (id, data) => {
+    const response = await api.post(`/matches/${id}/record_goal/`, data);
+    return response.data;
+};
+
+export const recordCard = async (id, data) => {
+    const response = await api.post(`/matches/${id}/record_card/`, data);
+    return response.data;
+};
+
+export const startMatch = async (id) => {
+    const response = await api.post(`/matches/${id}/start_match/`);
+    return response.data;
+};
+
+export const finishMatch = async (id) => {
+    const response = await api.post(`/matches/${id}/finish_match/`);
     return response.data;
 };
 

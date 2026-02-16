@@ -222,7 +222,7 @@ function Profile() {
                     <button
                         className="profile-menu-btn"
                         style={menuBtnStyle}
-                        onClick={() => navigate('/search')} // Redirect to search/teams
+                        onClick={() => navigate('/league?tab=standings')}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <UserPlus size={28} color="#10b981" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.3))' }} />

@@ -375,3 +375,18 @@ a:hover {
     font-size: 1.375rem;
   }
 }
+
+/* Live Match Pulse Animation */
+@keyframes pulse-live {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}

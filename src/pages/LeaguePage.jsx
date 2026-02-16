@@ -92,9 +92,11 @@ const MatchesList = ({ matches, filter }) => {
                     <div key={weekId} className="week-group">
                         <h3 className="week-header">{weekName}</h3>
                         <div className="match-list-grid">
-                            {groupedMatches[weekId].map(match => (
-                                <MatchCard key={match.id} match={match} />
-                            ))}
+                            {groupedMatches[weekId]
+                                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                .map(match => (
+                                    <MatchCard key={match.id} match={match} />
+                                ))}
                         </div>
                     </div>
                 );
@@ -113,6 +115,7 @@ export default function LeaguePage() {
     const [leagueId, setLeagueId] = useState(null);
     const [standings, setStandings] = useState([]);
     const [matches, setMatches] = useState([]);
+    const [allMatches, setAllMatches] = useState([]);
     const [players, setPlayers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -194,18 +197,29 @@ export default function LeaguePage() {
             if (activeTab === 'standings' && leagueId) {
                 const data = await getStandings(leagueId);
                 // Ensure data is array
-                setStandings(Array.isArray(data) ? data : []);
+                const arr = Array.isArray(data) ? data : [];
+                // Sort: points desc → goal difference desc → goals_for desc
+                arr.sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.goal_difference !== a.goal_difference) return b.goal_difference - a.goal_difference;
+                    return b.goals_for - a.goals_for;
+                });
+                setStandings(arr);
             } else if (activeTab === 'matches') {
                 const params = leagueId ? { 'week__league': leagueId } : {};
                 const data = await getMatches(params);
 
-                let filtered = Array.isArray(data) ? data : [];
+                let allData = Array.isArray(data) ? data : [];
+                setAllMatches(allData);
                 const now = new Date();
 
-                if (matchFilter === 'played') {
-                    filtered = filtered.filter(m => m.is_finished);
+                let filtered = allData;
+                if (matchFilter === 'live') {
+                    filtered = allData.filter(m => m.is_live);
+                } else if (matchFilter === 'played') {
+                    filtered = allData.filter(m => m.is_finished);
                 } else if (matchFilter === 'upcoming') {
-                    filtered = filtered.filter(m => !m.is_finished);
+                    filtered = allData.filter(m => !m.is_finished && !m.is_live);
                 }
                 setMatches(filtered);
             } else if (activeTab === 'players') {
@@ -338,15 +352,30 @@ export default function LeaguePage() {
                 {activeTab === 'matches' && (
                     <div className="matches-view-container">
                         <div className="match-filters">
-                            {['all', 'played', 'upcoming'].map(f => (
-                                <button
-                                    key={f}
-                                    onClick={() => handleMatchFilterChange(f)}
-                                    className={`filter-btn ${matchFilter === f ? 'active' : ''}`}
-                                >
-                                    {f === 'played' ? 'Oynanmış' : f === 'upcoming' ? 'Gelecek' : 'Tümü'}
-                                </button>
-                            ))}
+                            {['live', 'all', 'played', 'upcoming'].map(f => {
+                                // Only show 'live' tab if there are live matches
+                                if (f === 'live' && !allMatches.some(m => m.is_live) && matchFilter !== 'live') return null;
+                                return (
+                                    <button
+                                        key={f}
+                                        onClick={() => handleMatchFilterChange(f)}
+                                        className={`filter-btn ${matchFilter === f ? 'active' : ''}`}
+                                        style={f === 'live' ? { display: 'flex', alignItems: 'center', gap: '6px' } : {}}
+                                    >
+                                        {f === 'live' && (
+                                            <span style={{
+                                                width: '8px',
+                                                height: '8px',
+                                                borderRadius: '50%',
+                                                background: '#ef4444',
+                                                display: 'inline-block',
+                                                animation: 'pulse-live 1.5s ease-in-out infinite'
+                                            }} />
+                                        )}
+                                        {f === 'live' ? 'Canlı' : f === 'played' ? 'Oynanmış' : f === 'upcoming' ? 'Gelecek' : 'Tümü'}
+                                    </button>
+                                );
+                            })}
                         </div>
                         <MatchesList matches={matches} filter={matchFilter} />
                     </div>

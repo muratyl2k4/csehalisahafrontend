@@ -226,6 +226,26 @@
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
+    position: relative;
+}
+
+.match-score-box.live {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+}
+
+@keyframes pulse-live {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+    }
 }
 
 .match-date-text {
