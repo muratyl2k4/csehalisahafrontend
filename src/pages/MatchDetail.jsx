@@ -102,7 +102,7 @@ function MatchDetail() {
     const canRate = isFinished && match.voting_open && (userInTeam1 || userInTeam2);
 
     // Determine eligibility for Refereeing
-    const isReferee = currentUser && (match.referee === currentUser.id);
+    const isReferee = currentUser && (parseInt(match.referee) === parseInt(currentUser.id));
     const isAdmin = currentUser && currentUser.is_staff;
     const canManageMatch = (isReferee || isAdmin) && (!match.is_finished || isAdmin);
 
