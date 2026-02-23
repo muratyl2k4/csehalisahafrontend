@@ -214,6 +214,7 @@ export const login = async (credentials) => {
         const userInfo = {
             name: response.data.name,
             id: response.data.id,
+            user_id: response.data.user_id, // Store Django User ID
             teamId: response.data.current_team,
             photo: response.data.photo,
             is_email_verified: response.data.is_email_verified,

@@ -95,8 +95,8 @@ function MatchDetail() {
     const isFinished = match.is_finished;
 
     // Fix: Check against p.player_id (Player Profile ID) not p.id (Match Stats ID)
-    const userInTeam1 = currentUser && team1Players.some(p => p.player_id === currentUser.id);
-    const userInTeam2 = currentUser && team2Players.some(p => p.player_id === currentUser.id);
+    const userInTeam1 = currentUser && team1Players.some(p => String(p.player_id) === String(currentUser.id));
+    const userInTeam2 = currentUser && team2Players.some(p => String(p.player_id) === String(currentUser.id));
 
     // Only players who played in the match can rate, and voting must still be open (3 hours after match end)
     const canRate = isFinished && match.voting_open && (userInTeam1 || userInTeam2);
@@ -105,12 +105,17 @@ function MatchDetail() {
     console.log("DEBUG REF CHECK:", {
         matchRef: match.referee,
         userId: currentUser?.id,
+        djangoUserId: currentUser?.user_id, // New check 
         matchRefType: typeof match.referee,
         userIdType: typeof currentUser?.id,
-        isMatch: currentUser && (String(match.referee) === String(currentUser.id))
+        isMatch: currentUser && ((currentUser.user_id && String(match.referee) === String(currentUser.user_id)) || (String(match.referee) === String(currentUser.id)))
     });
 
-    const isReferee = currentUser && (String(match.referee) === String(currentUser.id));
+    // Check against Django User ID (user_id) if available, otherwise fallback to Player ID (id) though usually different
+    const isReferee = currentUser && (
+        (currentUser.user_id && String(match.referee) === String(currentUser.user_id)) ||
+        (String(match.referee) === String(currentUser.id))
+    );
     const isAdmin = currentUser && currentUser.is_staff;
     const canManageMatch = (isReferee || isAdmin) && (!match.is_finished || isAdmin);
 

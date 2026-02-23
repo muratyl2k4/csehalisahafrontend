@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import api from '../services/api'; // Import api to fetch updated user info
 
 const AuthContext = createContext();
 
@@ -7,20 +8,45 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in
-        const token = localStorage.getItem('access_token');
-        const userInfo = localStorage.getItem('user_info');
+        const checkAuth = async () => {
+            const token = localStorage.getItem('access_token');
+            const userInfo = localStorage.getItem('user_info');
 
-        if (token && userInfo) {
-            try {
-                setUser(JSON.parse(userInfo));
-            } catch (e) {
-                console.error("Failed to parse user info, clearing session.", e);
-                localStorage.clear();
-                setUser(null);
+            if (token && userInfo) {
+                try {
+                    const parsedUser = JSON.parse(userInfo);
+                    setUser(parsedUser);
+
+                    // AUTO-FIX: If user_id is missing (old session), fetch it from backend
+                    if (!parsedUser.user_id) {
+                        console.log("Session update required: Fetching user_id...");
+                        try {
+                            const response = await api.get('/players/me/');
+                            const updatedUser = {
+                                ...parsedUser,
+                                user_id: response.data.user_id, // Get the missing ID
+                                id: response.data.id // Ensure Player ID is also consistent
+                            };
+
+                            localStorage.setItem('user_info', JSON.stringify(updatedUser));
+                            setUser(updatedUser);
+                            console.log("Session updated successfully.");
+                        } catch (refreshErr) {
+                            console.error("Failed to refresh session details", refreshErr);
+                            // Continue with old session, better than nothing
+                        }
+                    }
+
+                } catch (e) {
+                    console.error("Failed to parse user info, clearing session.", e);
+                    localStorage.clear();
+                    setUser(null);
+                }
             }
-        }
-        setLoading(false);
+            setLoading(false);
+        };
+
+        checkAuth();
     }, []);
 
     const login = (userData, token, refreshToken) => {
