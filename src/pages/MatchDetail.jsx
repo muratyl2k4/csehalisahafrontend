@@ -94,27 +94,21 @@ function MatchDetail() {
     // Determine eligibility for Rating
     const isFinished = match.is_finished;
 
-    // Fix: Check against p.player_id (Player Profile ID) not p.id (Match Stats ID)
-    const userInTeam1 = currentUser && team1Players.some(p => String(p.player_id) === String(currentUser.id));
-    const userInTeam2 = currentUser && team2Players.some(p => String(p.player_id) === String(currentUser.id));
+    // Strict check: Must use Django User ID (user_id)
+    const userInTeam1 = currentUser && currentUser.user_id && team1Players.some(p =>
+        String(p.player_user_id) === String(currentUser.user_id)
+    );
+    const userInTeam2 = currentUser && currentUser.user_id && team2Players.some(p =>
+        String(p.player_user_id) === String(currentUser.user_id)
+    );
 
     // Only players who played in the match can rate, and voting must still be open (3 hours after match end)
     const canRate = isFinished && match.voting_open && (userInTeam1 || userInTeam2);
 
     // Determine eligibility for Refereeing
-    console.log("DEBUG REF CHECK:", {
-        matchRef: match.referee,
-        userId: currentUser?.id,
-        djangoUserId: currentUser?.user_id, // New check 
-        matchRefType: typeof match.referee,
-        userIdType: typeof currentUser?.id,
-        isMatch: currentUser && ((currentUser.user_id && String(match.referee) === String(currentUser.user_id)) || (String(match.referee) === String(currentUser.id)))
-    });
-
-    // Check against Django User ID (user_id) if available, otherwise fallback to Player ID (id) though usually different
-    const isReferee = currentUser && (
-        (currentUser.user_id && String(match.referee) === String(currentUser.user_id)) ||
-        (String(match.referee) === String(currentUser.id))
+    // Strictly check against Django User ID (user_id)
+    const isReferee = currentUser && currentUser.user_id && (
+        String(match.referee) === String(currentUser.user_id)
     );
     const isAdmin = currentUser && currentUser.is_staff;
     const canManageMatch = (isReferee || isAdmin) && (!match.is_finished || isAdmin);

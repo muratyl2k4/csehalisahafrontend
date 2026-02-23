@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
 
                     // AUTO-FIX: If user_id is missing (old session), fetch it from backend
                     if (!parsedUser.user_id) {
-                        console.log("Session update required: Fetching user_id...");
                         try {
                             const response = await api.get('/players/me/');
                             const updatedUser = {
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }) => {
 
                             localStorage.setItem('user_info', JSON.stringify(updatedUser));
                             setUser(updatedUser);
-                            console.log("Session updated successfully.");
                         } catch (refreshErr) {
                             console.error("Failed to refresh session details", refreshErr);
                             // Continue with old session, better than nothing
