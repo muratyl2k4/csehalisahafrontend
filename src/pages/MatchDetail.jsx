@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getMatch, ratePlayer, isAuthenticated } from '../services/api';
-import { Calendar, Trophy, ArrowLeft, Hourglass, Star, Shield } from 'lucide-react'; // Added Shield
+import { Calendar, Trophy, ArrowLeft, Hourglass, Star, Shield } from 'lucide-react';
 import PlayerCard from '../components/PlayerCard';
-import PlayerRatingModal from '../components/PlayerRatingModal';
 
 import { useToast } from '../context/ToastContext';
 import '../styles/home.css';
@@ -17,11 +16,7 @@ function MatchDetail() {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('team1');
 
-    // Rating State
-    const [showRatingModal, setShowRatingModal] = useState(false);
-    const [showRefereeInterface, setShowRefereeInterface] = useState(false); // Added State
     const [currentUser, setCurrentUser] = useState(null);
-    const [ratedPlayerIds, setRatedPlayerIds] = useState([]);
 
     useEffect(() => {
         const userInfo = localStorage.getItem('user_info');
@@ -43,26 +38,7 @@ function MatchDetail() {
         }
     };
 
-    const handleRateSubmit = async (playerId, ratings, comment) => {
-        try {
-            await ratePlayer(id, {
-                rated_player: playerId,
-                ...ratings,
-                comment
-            });
-            success('Oyuncu başarıyla oylandı!');
-            setRatedPlayerIds(prev => [...prev, parseInt(playerId)]);
-        } catch (err) {
-            console.error(err);
-            if (err.response && err.response.data && err.response.data.detail) {
-                showError(err.response.data.detail);
-            } else if (err.response && err.response.data && err.response.data.non_field_errors) {
-                showError(err.response.data.non_field_errors[0]);
-            } else {
-                showError('Puanlama sırasında bir hata oluştu.');
-            }
-        }
-    };
+
 
     if (loading) return (
         <div className="container">
@@ -94,29 +70,30 @@ function MatchDetail() {
     // Determine eligibility for Rating
     const isFinished = match.is_finished;
 
-    // Strict check: Must use Django User ID (user_id)
-    const userInTeam1 = currentUser && currentUser.user_id && team1Players.some(p =>
-        String(p.player_user_id) === String(currentUser.user_id)
+    // ROBUST CHECK: Check both user_id (Django User) and id (Player Profile)
+    const userInTeam1 = currentUser && (
+        (currentUser.user_id && team1Players.some(p => String(p.player_user_id) === String(currentUser.user_id))) ||
+        (currentUser.id && team1Players.some(p => String(p.player_id) === String(currentUser.id)))
     );
-    const userInTeam2 = currentUser && currentUser.user_id && team2Players.some(p =>
-        String(p.player_user_id) === String(currentUser.user_id)
+    const userInTeam2 = currentUser && (
+        (currentUser.user_id && team2Players.some(p => String(p.player_user_id) === String(currentUser.user_id))) ||
+        (currentUser.id && team2Players.some(p => String(p.player_id) === String(currentUser.id)))
     );
 
+    const isAdmin = currentUser && currentUser.is_staff;
+
     // Only players who played in the match can rate, and voting must still be open (3 hours after match end)
-    const canRate = isFinished && match.voting_open && (userInTeam1 || userInTeam2);
+    // Admin can also rate regardless (to manage/fix issues)
+    const canRate = (isFinished && match.voting_open && (userInTeam1 || userInTeam2)) || (isFinished && isAdmin);
 
     // Determine eligibility for Refereeing
     // Strictly check against Django User ID (user_id)
     const isReferee = currentUser && currentUser.user_id && (
         String(match.referee) === String(currentUser.user_id)
     );
-    const isAdmin = currentUser && currentUser.is_staff;
     const canManageMatch = (isReferee || isAdmin) && (!match.is_finished || isAdmin);
 
-    // Determine opponents for Rating Modal
-    let opponents = [];
-    if (userInTeam1) opponents = team2Players;
-    else if (userInTeam2) opponents = team1Players;
+
 
     // Filter out self just in case, though strictly lists are separated
     // Also filter out players user has just rated in this session
@@ -320,18 +297,6 @@ function MatchDetail() {
                 </div>
             </div>
 
-            {/* Rating Modal */}
-            <PlayerRatingModal
-                isOpen={showRatingModal}
-                onClose={() => setShowRatingModal(false)}
-                opponents={opponents.map(p => ({
-                    player_id: p.id,
-                    player_name: p.name,
-                    player_photo: p.photo
-                }))}
-                alreadyRatedIds={ratedPlayerIds}
-                onSubmit={handleRateSubmit}
-            />
         </div>
     );
 }

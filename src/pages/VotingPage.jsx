@@ -50,8 +50,14 @@ export default function VotingPage() {
             const team1Players = data.team1_players || [];
             const team2Players = data.team2_players || [];
 
-            const inTeam1 = team1Players.some(p => p.player_id === userInfo.id);
-            const inTeam2 = team2Players.some(p => p.player_id === userInfo.id);
+            const inTeam1 = team1Players.some(p =>
+                (userInfo.user_id && String(p.player_user_id) === String(userInfo.user_id)) ||
+                (userInfo.id && String(p.player_id) === String(userInfo.id))
+            );
+            const inTeam2 = team2Players.some(p =>
+                (userInfo.user_id && String(p.player_user_id) === String(userInfo.user_id)) ||
+                (userInfo.id && String(p.player_id) === String(userInfo.id))
+            );
 
             let ops = [];
             if (inTeam1) ops = team2Players;

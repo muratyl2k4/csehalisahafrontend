@@ -267,6 +267,7 @@ export const updateProfile = async (data) => {
         ...currentUser,
         name: response.data.name,
         photo: response.data.photo,
+        user_id: response.data.user_id || currentUser.user_id, // PRESERVE OR UPDATE user_id
         is_email_verified: response.data.is_email_verified // Important: Update verification status
     };
     localStorage.setItem('user_info', JSON.stringify(updatedUser));
@@ -426,6 +427,7 @@ export const refreshUserInfo = async () => {
             ...currentUser, // Keep existing fields like is_staff if not returned by refresh
             name: data.name,
             id: data.id,
+            user_id: data.user_id || currentUser.user_id, // RESTORE OR PRESERVE user_id
             teamId: data.current_team,
             photo: data.photo,
             is_email_verified: data.is_email_verified
