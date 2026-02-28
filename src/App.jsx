@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import ScrollToTop from './components/layout/ScrollToTop';
 import Home from './pages/Home';
+import Rules from './pages/Rules';
 import Teams from './pages/Teams';
 import TeamDetail from './pages/TeamDetail';
 import TeamRequests from './pages/TeamRequests';
@@ -117,6 +118,7 @@ function App() {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/rules" element={<Rules />} />
           </Routes>
         </VerificationEnforcer>
       </Router>

@@ -197,6 +197,35 @@ function Home() {
                     <p>Gol ve asist krallığı</p>
                 </Link>
             </div>
+
+            {/* Footer Section */}
+            <footer style={{
+                marginTop: '6rem',
+                padding: '4rem 0 2rem',
+                borderTop: '1px solid var(--border-light)',
+                textAlign: 'center'
+            }}>
+                <div style={{ marginBottom: '2rem' }}>
+                    <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>CSE LİG</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Halı Saha Organizasyonu</p>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem' }}>
+                    <Link to="/rules" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', transition: 'opacity 0.2s' }}>
+                        Lig Kuralları
+                    </Link>
+                    <Link to="/league?tab=standings" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem' }}>
+                        Puan Durumu
+                    </Link>
+                    <Link to="/league?tab=matches" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem' }}>
+                        Fikstür
+                    </Link>
+                </div>
+
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', opacity: 0.6 }}>
+                    &copy; {new Date().getFullYear()} CSE LİG. All rights reserved.
+                </div>
+            </footer>
         </div>
     );
 }
