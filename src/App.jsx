@@ -33,6 +33,7 @@ import PWAInstallPrompt from './components/layout/PWAInstallPrompt';
 import NotificationPermissionPrompt from './components/layout/NotificationPermissionPrompt';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import './styles/main.css';
 
 // Global Verification Check Component
@@ -125,6 +126,7 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/rules" element={<Rules />} />
               </Routes>
+              <Analytics />
             </PageLayout>
           </VerificationEnforcer>
         </Router>
