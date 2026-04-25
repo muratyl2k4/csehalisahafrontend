@@ -354,8 +354,8 @@ export const startMatch = async (id) => {
     return response.data;
 };
 
-export const finishMatch = async (id) => {
-    const response = await api.post(`/matches/${id}/finish_match/`);
+export const finishMatch = async (id, data = {}) => {
+    const response = await api.post(`/matches/${id}/finish_match/`, data);
     return response.data;
 };
 

@@ -160,14 +160,32 @@ const RefereePage = () => {
 
     // State for Finish Confirmation
     const [showConfirmFinish, setShowConfirmFinish] = useState(false);
+    const [showPenaltyInput, setShowPenaltyInput] = useState(false);
+    const [team1Penalties, setTeam1Penalties] = useState('');
+    const [team2Penalties, setTeam2Penalties] = useState('');
 
     const handleFinishClick = () => {
-        setShowConfirmFinish(true);
+        if (match?.match_type === 'TOURNAMENT' && match.team1_score === match.team2_score) {
+            setShowPenaltyInput(true);
+        } else {
+            setShowConfirmFinish(true);
+        }
     };
 
     const confirmFinishMatch = async () => {
         try {
-            await finishMatch(id);
+            let data = {};
+            if (showPenaltyInput) {
+                if (team1Penalties === '' || team2Penalties === '') {
+                    error("Lütfen iki takım için de penaltı skorlarını giriniz.");
+                    return;
+                }
+                data = {
+                    team1_penalties: parseInt(team1Penalties),
+                    team2_penalties: parseInt(team2Penalties)
+                };
+            }
+            await finishMatch(id, data);
             success("Maç başarıyla tamamlandı.");
             navigate(`/matches/${id}`);
         } catch (err) {
@@ -175,6 +193,7 @@ const RefereePage = () => {
             error("Maç bitirilemedi.");
         } finally {
             setShowConfirmFinish(false);
+            setShowPenaltyInput(false);
         }
     };
 
@@ -482,6 +501,67 @@ const RefereePage = () => {
                                 style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', background: '#ef4444', border: 'none', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
                             >
                                 Maçı Bitir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal for Penalty Input */}
+            {showPenaltyInput && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(5px)'
+                }}>
+                    <div style={{
+                        background: 'var(--bg-secondary)', padding: '2rem', borderRadius: '16px', maxWidth: '400px', width: '90%',
+                        textAlign: 'center', border: '1px solid var(--border-light)'
+                    }}>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem', fontSize: '1.25rem' }}>Penaltı Skorları</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                            Turnuva maçları beraberlikle bitemez. Lütfen penaltı atışları sonucunu giriniz.
+                        </p>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>{match.team1_info.short_name || match.team1_info.name}</label>
+                                <input 
+                                    type="number" 
+                                    min="0"
+                                    value={team1Penalties}
+                                    onChange={(e) => setTeam1Penalties(e.target.value)}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-medium)', background: 'var(--bg-primary)', color: 'white', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)', fontWeight: 'bold', fontSize: '1.2rem', marginTop: '1.5rem' }}>
+                                -
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>{match.team2_info.short_name || match.team2_info.name}</label>
+                                <input 
+                                    type="number" 
+                                    min="0"
+                                    value={team2Penalties}
+                                    onChange={(e) => setTeam2Penalties(e.target.value)}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border-medium)', background: 'var(--bg-primary)', color: 'white', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                            <button
+                                onClick={() => setShowPenaltyInput(false)}
+                                style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', background: 'transparent', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', cursor: 'pointer', flex: 1 }}
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={confirmFinishMatch}
+                                style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', background: 'var(--primary-color)', border: 'none', color: 'black', fontWeight: 'bold', cursor: 'pointer', flex: 1 }}
+                            >
+                                Onayla & Bitir
                             </button>
                         </div>
                     </div>

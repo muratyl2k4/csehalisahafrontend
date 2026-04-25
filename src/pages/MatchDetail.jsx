@@ -192,6 +192,11 @@ function MatchDetail() {
                                 <Hourglass size={48} className="text-muted" style={{ opacity: 0.5 }} />
                             )}
                         </div>
+                        {match.is_finished && match.team1_penalties != null && match.team2_penalties != null && (
+                            <div style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.5rem', letterSpacing: '1px' }}>
+                                (PEN: {match.team1_penalties} - {match.team2_penalties})
+                            </div>
+                        )}
                     </div>
 
                     {/* Team 2 */}

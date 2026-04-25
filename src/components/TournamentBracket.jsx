@@ -62,7 +62,7 @@ const TournamentBracket = ({ tournament }) => {
         };
     }, [tournament, scale, rounds]);
 
-    // Zoom handler with native event to properly prevent page scroll
+    // Zoom and pan handlers with native events to properly prevent page scroll
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -73,8 +73,50 @@ const TournamentBracket = ({ tournament }) => {
             setScale(prev => Math.min(Math.max(prev * delta, 0.2), 3));
         };
 
+        let initialDist = null;
+
+        const handleNativeTouchStart = (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault(); // Prevent native browser pinch zoom
+                initialDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        };
+
+        const handleNativeTouchMove = (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault(); // Prevent native browser pinch zoom
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (initialDist !== null && initialDist > 0) {
+                    const delta = currentDist / initialDist;
+                    setScale(prev => Math.min(Math.max(prev * (delta > 1 ? 1.03 : 0.97), 0.2), 3));
+                }
+                initialDist = currentDist;
+            }
+        };
+
+        const handleNativeTouchEnd = (e) => {
+            if (e.touches.length < 2) {
+                initialDist = null;
+            }
+        };
+
         container.addEventListener('wheel', handleNativeWheel, { passive: false });
-        return () => container.removeEventListener('wheel', handleNativeWheel);
+        container.addEventListener('touchstart', handleNativeTouchStart, { passive: false });
+        container.addEventListener('touchmove', handleNativeTouchMove, { passive: false });
+        container.addEventListener('touchend', handleNativeTouchEnd);
+        
+        return () => {
+            container.removeEventListener('wheel', handleNativeWheel);
+            container.removeEventListener('touchstart', handleNativeTouchStart);
+            container.removeEventListener('touchmove', handleNativeTouchMove);
+            container.removeEventListener('touchend', handleNativeTouchEnd);
+        }
     }, []);
 
     const handleMouseDown = (e) => {
@@ -85,8 +127,12 @@ const TournamentBracket = ({ tournament }) => {
     };
 
     const handleTouchStart = (e) => {
-        setIsDragging(true);
-        setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
+        if (e.touches.length === 1) {
+            setIsDragging(true);
+            setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
+        } else {
+            setIsDragging(false);
+        }
     };
 
     const handleMouseMove = (e) => {
@@ -99,7 +145,7 @@ const TournamentBracket = ({ tournament }) => {
     };
 
     const handleTouchMove = (e) => {
-        if (isDragging) {
+        if (isDragging && e.touches.length === 1) {
             setPosition({
                 x: e.touches[0].clientX - dragStart.x,
                 y: e.touches[0].clientY - dragStart.y
@@ -173,21 +219,25 @@ const TournamentBracket = ({ tournament }) => {
                                         onClick={() => navigate(`/matches/${node.id}`)}
                                     >
                                         {/* Team 1 */}
-                                        <div className={`node-team ${node.is_finished && node.team1_score > node.team2_score ? 'winner' : ''}`}>
+                                        <div className={`node-team ${node.is_finished && (node.team1_score > node.team2_score || (node.team1_score === node.team2_score && node.team1_penalties != null && node.team1_penalties > node.team2_penalties)) ? 'winner' : ''}`}>
                                             <div className="team-logo-small">
                                                 {node.team1_logo ? <img src={node.team1_logo} alt="" /> : <Users size={12} />}
                                             </div>
                                             <span className="team-name">{node.team1_name || 'Bekleniyor...'}</span>
-                                            <span className="team-score">{node.is_finished ? node.team1_score : '-'}</span>
+                                            <span className="team-score">
+                                                {node.is_finished ? `${node.team1_score}${node.team1_penalties != null ? ` (${node.team1_penalties})` : ''}` : '-'}
+                                            </span>
                                         </div>
                                         
                                         {/* Team 2 */}
-                                        <div className={`node-team ${node.is_finished && node.team2_score > node.team1_score ? 'winner' : ''}`}>
+                                        <div className={`node-team ${node.is_finished && (node.team2_score > node.team1_score || (node.team2_score === node.team1_score && node.team2_penalties != null && node.team2_penalties > node.team1_penalties)) ? 'winner' : ''}`}>
                                             <div className="team-logo-small">
                                                 {node.team2_logo ? <img src={node.team2_logo} alt="" /> : <Users size={12} />}
                                             </div>
                                             <span className="team-name">{node.team2_name || 'Bekleniyor...'}</span>
-                                            <span className="team-score">{node.is_finished ? node.team2_score : '-'}</span>
+                                            <span className="team-score">
+                                                {node.is_finished ? `${node.team2_score}${node.team2_penalties != null ? ` (${node.team2_penalties})` : ''}` : '-'}
+                                            </span>
                                         </div>
 
                                         {node.is_live && <div className="live-badge-mini">CANLI</div>}
@@ -302,7 +352,9 @@ const TournamentBracket = ({ tournament }) => {
                     background: #1e293b;
                     border: 1px solid rgba(255,255,255,0.08);
                     border-radius: 12px;
-                    width: 200px;
+                    width: max-content;
+                    min-width: 240px;
+                    max-width: 350px;
                     overflow: hidden;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
                     cursor: pointer;
@@ -338,6 +390,7 @@ const TournamentBracket = ({ tournament }) => {
                     justify-content: center;
                     background: rgba(255,255,255,0.03);
                     border-radius: 6px;
+                    flex-shrink: 0;
                 }
                 .team-logo-small img {
                     width: 100%;
@@ -348,17 +401,19 @@ const TournamentBracket = ({ tournament }) => {
                     flex: 1;
                     font-size: 0.85rem;
                     color: rgba(255,255,255,0.8);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    white-space: normal;
+                    line-height: 1.3;
+                    word-break: break-word;
                 }
                 .team-score {
                     font-weight: 900;
                     color: #fff;
                     font-size: 1rem;
-                    min-width: 20px;
+                    min-width: 40px;
                     text-align: right;
                     font-family: 'Inter', sans-serif;
+                    white-space: nowrap;
+                    flex-shrink: 0;
                 }
                 .live-badge-mini {
                     position: absolute;

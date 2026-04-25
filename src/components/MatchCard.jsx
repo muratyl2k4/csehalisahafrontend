@@ -47,8 +47,13 @@ const MatchCard = ({ match }) => {
                         {`${match.team1_score} - ${match.team2_score}`}
                     </div>
                 ) : (
-                    <div className={`match-score-box ${!match.is_finished ? 'upcoming' : ''}`}>
-                        {match.is_finished ? `${match.team1_score} - ${match.team2_score}` : <Hourglass size={16} />}
+                    <div className={`match-score-box ${!match.is_finished ? 'upcoming' : ''}`} style={{ flexDirection: 'column', gap: '2px', padding: '6px 12px' }}>
+                        <div>{match.is_finished ? `${match.team1_score} - ${match.team2_score}` : <Hourglass size={16} />}</div>
+                        {match.is_finished && match.team1_penalties != null && match.team2_penalties != null && (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+                                (P: {match.team1_penalties}-{match.team2_penalties})
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
