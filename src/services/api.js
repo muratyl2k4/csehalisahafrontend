@@ -310,6 +310,11 @@ export const getLeagues = async () => {
     return handleResponse(response);
 };
 
+export const getLeague = async (id) => {
+    const response = await api.get(`/leagues/${id}/`);
+    return response.data;
+};
+
 export const getWeeks = async (leagueId) => {
     const response = await api.get(`/leagues/weeks/?league=${leagueId}`);
     return handleResponse(response);

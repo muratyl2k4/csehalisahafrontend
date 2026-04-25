@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Search, Trophy, Users, Calendar, Filter, ChevronLeft, ChevronRight, Newspaper, ChevronDown, Hourglass } from 'lucide-react';
-import { getLeagues, getPlayers, getMatches, getStandings } from '../services/api';
+import { getLeagues, getPlayers, getMatches, getStandings, getLeague } from '../services/api';
 import '../styles/main.css';
 import '../styles/player-table.css';
 import '../styles/LeaguePage.css';
 import MatchCard from '../components/MatchCard';
+import TournamentBracket from '../components/TournamentBracket';
 
 // ... (previous components)
 
@@ -113,6 +114,7 @@ export default function LeaguePage() {
     // Data States
     const [leaguesList, setLeaguesList] = useState([]);
     const [leagueId, setLeagueId] = useState(null);
+    const [currentLeague, setCurrentLeague] = useState(null);
     const [standings, setStandings] = useState([]);
     const [matches, setMatches] = useState([]);
     const [allMatches, setAllMatches] = useState([]);
@@ -185,10 +187,22 @@ export default function LeaguePage() {
 
     useEffect(() => {
         // Load data if we have a league ID (for league tabs) OR if we are on players tab (global)
+        if (leagueId) {
+            loadLeagueDetail();
+        }
         if (leagueId || activeTab === 'players') {
             loadData();
         }
     }, [activeTab, matchFilter, playerPage, playerSearch, playerPosition, leagueId]);
+
+    const loadLeagueDetail = async () => {
+        try {
+            const data = await getLeague(leagueId);
+            setCurrentLeague(data);
+        } catch (e) {
+            console.error("League detail load failed", e);
+        }
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -210,6 +224,8 @@ export default function LeaguePage() {
                 const data = await getMatches(params);
 
                 let allData = Array.isArray(data) ? data : [];
+                // Sadece lig maçlarını göster (Turnuva maçlarını fikstürden ayır)
+                allData = allData.filter(m => m.match_type === 'LEAGUE');
                 setAllMatches(allData);
                 const now = new Date();
 
@@ -274,7 +290,7 @@ export default function LeaguePage() {
     }, [isDropdownOpen]);
 
     return (
-        <div className="league-page-container">
+        <div className="container league-page-container">
             {/* Header Tabs */}
             <div className="league-tabs" id="league-tabs-container">
 
@@ -346,7 +362,12 @@ export default function LeaguePage() {
                 {error && <div className="error-message" style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>{error}</div>}
 
                 {activeTab === 'standings' && (
-                    <StandingsTable standings={standings} onTeamClick={handleTeamClick} />
+                    <>
+                        {currentLeague?.tournament && (
+                            <TournamentBracket tournament={currentLeague.tournament} />
+                        )}
+                        <StandingsTable standings={standings} onTeamClick={handleTeamClick} />
+                    </>
                 )}
 
                 {activeTab === 'matches' && (

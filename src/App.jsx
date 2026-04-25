@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
+import PageLayout from './components/layout/PageLayout';
 import ScrollToTop from './components/layout/ScrollToTop';
 import Home from './pages/Home';
 import Rules from './pages/Rules';
@@ -16,6 +17,7 @@ import VotingPage from './pages/VotingPage';
 import Leaderboard from './pages/Leaderboard';
 import LeaguePage from './pages/LeaguePage';
 import NewsPage from './pages/NewsPage';
+import NewsDetailPage from './pages/NewsDetailPage';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile'; // Import Profile
 import ProfileEdit from './pages/ProfileEdit';
@@ -89,40 +91,45 @@ function App() {
   }, []);
 
   return (
-    <ToastProvider>
-      <Router>
-        <VerificationEnforcer>
-          <ScrollToTop />
-          <Navbar />
-          <PWAInstallPrompt /> {/* iOS Install Prompt (Install APP) */}
-          <NotificationPermissionPrompt /> {/* iOS Permission Prompt (Enable Push) */}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/create-team" element={<CreateTeam />} />
-            {/* Teams list route removed, redirected to search */}
-            <Route path="/teams/:id" element={<TeamDetail />} />
-            <Route path="/teams/:id/requests" element={<TeamRequests />} />
-            {/* Players list route removed, redirected to search */}
-            <Route path="/league" element={<LeaguePage />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="/players/:id" element={<PlayerDetail />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/edit" element={<ProfileEdit />} />
-            <Route path="/matches" element={<Matches />} />
-            <Route path="/matches/:id" element={<MatchDetail />} />
-            <Route path="/matches/:id/vote" element={<VotingPage />} /> {/* Added route */}
-            <Route path="/matches/:id/manage" element={<RefereePage />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/rules" element={<Rules />} />
-          </Routes>
-        </VerificationEnforcer>
-      </Router>
-    </ToastProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <Router>
+          <VerificationEnforcer>
+            <ScrollToTop />
+            <Navbar />
+            <PWAInstallPrompt /> {/* iOS Install Prompt (Install APP) */}
+            <NotificationPermissionPrompt /> {/* iOS Permission Prompt (Enable Push) */}
+            <PageLayout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/create-team" element={<CreateTeam />} />
+                {/* Teams list route removed, redirected to search */}
+                <Route path="/teams/:id" element={<TeamDetail />} />
+                <Route path="/teams/:id/requests" element={<TeamRequests />} />
+                {/* Players list route removed, redirected to search */}
+                <Route path="/league" element={<LeaguePage />} />
+                <Route path="/news" element={<NewsPage />} />
+                <Route path="/news/:id" element={<NewsDetailPage />} />
+                <Route path="/players/:id" element={<PlayerDetail />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/edit" element={<ProfileEdit />} />
+                <Route path="/matches" element={<Matches />} />
+                <Route path="/matches/:id" element={<MatchDetail />} />
+                <Route path="/matches/:id/vote" element={<VotingPage />} /> {/* Added route */}
+                <Route path="/matches/:id/manage" element={<RefereePage />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/rules" element={<Rules />} />
+              </Routes>
+            </PageLayout>
+          </VerificationEnforcer>
+        </Router>
+      </ToastProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,0 +1,21 @@
+/* ========== PAGE LAYOUT WRAPPER ========== */
+/* This handles the global padding required by the fixed mobile navbar */
+
+.page-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    z-index: 1; /* Below navbar */
+}
+
+/* On Desktop: Navbar is sticky and in the document flow, so no top padding needed here */
+
+/* On Mobile: Navbar is fixed, so we need top padding to prevent overlap */
+@media (max-width: 768px) {
+    .page-layout {
+        /* 60px base navbar height + safe area + 10px visual buffer */
+        padding-top: calc(70px + env(safe-area-inset-top)); 
+    }
+}

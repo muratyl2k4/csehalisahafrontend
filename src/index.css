@@ -214,8 +214,7 @@ p {
   .container {
     width: var(--container-width-mobile);
     max-width: var(--container-width-mobile);
-    padding: calc(80px + env(safe-area-inset-top)) 0 2rem 0;
-    /* Clear fixed navbar (60px) + 10px spacing */
+    padding: 1rem 0 2rem 0;
   }
 }
 

@@ -3,11 +3,14 @@
 .league-page-container {
     min-height: 100vh;
     padding: 1rem;
-    padding-bottom: 6rem;
-    padding-top: 6rem;
-    /* Increased to clear Navbar */
-    max-width: 800px;
+    padding-bottom: 2rem;
+    padding-top: 0;
+    /* Handled by PageLayout */
+    max-width: 100%;
+    /* Allow it to fill space */
     margin: 0 auto;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
 }
 
 /* Header Tabs */
@@ -20,8 +23,8 @@
     /* Allow horizontal scrolling */
     white-space: nowrap;
     /* Prevent wrapping */
-    justify-content: flex-start;
-    /* Start from left to avoid clipping when scrolling */
+    justify-content: center;
+    /* Centered */
 
     padding: 0.5rem 0rem;
     /* Remove horizontal padding for clearer left alignment start */
@@ -577,8 +580,8 @@
     padding: 0.5rem 0rem;
     /* Reduced padding, aligned left */
     display: flex;
-    justify-content: flex-start;
-    /* Align Left */
+    justify-content: center;
+    /* Centered */
     align-items: center;
     background-color: transparent;
     /* Transparent to blend */
